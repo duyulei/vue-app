@@ -1,0 +1,94 @@
+<template>
+  <div class="privacy">
+    <x-header class="header" :left-options="{backText: ''}">不让以下公司看我
+      <img slot="right" width="22px" @click="save()" src="../../assets/right.png"/>
+    </x-header>
+    <group title="">
+      <x-input placeholder="输入公司名称" v-model="companyName"></x-input>
+    </group>
+    <span class="indro-text">一旦你输入了某个公司名称，所有与该名称完全按一致的公司简称或者公司全称下的boss均无法看到你的简历</span>
+  </div>
+</template>
+
+<script>
+  import { XHeader, Group, Cell, XInput } from 'vux'
+
+  export default {
+    name: 'privacy',
+    components: { XHeader, Group, Cell, XInput },
+    data() {
+      return {
+        companyName: ''
+      }
+    },
+    created() {
+    },
+    methods: {
+      save: function () {
+        this.$store.dispatch('shieldCompany', this.companyName).then(res => {
+          if (res.data.code === '200') {
+            this.$vux.toast.text(res.data.message)
+            this.$router.go(-1)
+          } else {
+          }
+        })
+      }
+    }
+  }
+</script>
+
+<style scoped>
+.privacy{
+  background: #f1f1f1;
+  padding: 45px 0;
+}
+.privacy .weui-cell{
+  font-size: 14px;
+}
+.indro-text{
+  color: #aaa;
+  padding: 15px;
+  display: inline-block;
+}
+.header{
+  background: #d86372;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+}
+</style>
+<style>
+  .header.vux-header .vux-header-left .left-arrow:before {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #fff;
+    border-width: 1px 0 0 1px;
+    -webkit-transform: rotate(315deg);
+    transform: rotate(315deg);
+    top: 8px;
+    left: 7px;
+  }
+  .privacy .mint-radiolist-title{
+    font-size: 14px;
+    display: block;
+    margin: 0;
+    color: #000;
+    background: #FFF;
+    padding: 10px 15px;
+    font-weight: 600;
+  }
+  .company .mint-radiolist-title{
+    margin: 15px 0 0;
+  }
+  .privacy .mint-cell-wrapper{
+    font-size: 14px;
+  }
+  .privacy .mint-radio-input:checked + .mint-radio-core {
+    background-color: #d86372;
+    border-color: #d86372;
+  }
+</style>

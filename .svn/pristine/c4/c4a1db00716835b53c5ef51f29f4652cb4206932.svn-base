@@ -1,0 +1,264 @@
+<template>
+  <div class="account-fund">
+    <x-header class="header" :left-options="{backText: ''}" >账户资金<a @click="gotoWithdrawals" class="enchashment" slot="right">提现</a></x-header>
+    <div class="header-con">
+      <p class="today-income">￥{{userMoney}}</p>
+      <p class="color-gray">账户资金</p>
+    </div>
+    <el-row class="header-income">
+      <el-col :span='12'>
+        <div>
+          <p class="color-gray">今日收益</p>
+          <p>￥{{todayIncome}}</p>
+        </div>
+      </el-col>
+      <el-col :span='12'>
+        <div>
+          <p class="color-gray">累计收益</p>
+          <p>￥{{totalIncome}}</p>
+        </div>
+      </el-col>
+    </el-row>
+    <div style="clear: both"></div>
+    <group class="fund-group">
+      <cell title="支付宝账户" @click.native="goUserAlipay" is-link :value="alipayAccountNum?'已绑定':'未绑定'"></cell>
+      <!-- <cell title="微信账户" is-link :link="{path:''}" :value="weChatAccountNum?'已绑定':'未绑定'"></cell> -->
+    </group>
+    <div class="control">
+      <span>收提记录</span>
+    </div>
+    <!-- <p class="control-p">2017/12</p> -->
+    <mt-loadmore :top-method="loadTop" :bottom-method="loadBottom" :bottom-all-loaded="allLoaded" :auto-fill="false"
+                 ref="loadmore">
+    <cell-box is-link @click.native="gotoDetail(index)" v-for="(incomeExpenseRecordValue, index) in incomeExpenseRecordValues" :key="index" class="cell-list">
+      <div class="list-time">
+        {{incomeExpenseRecordValue.updateTimestampView}}
+      </div>
+      <div class="list-info">
+        <p class="list-info-money" v-if="incomeExpenseRecordValue.incomeExpenseDiv==='01'">+ {{incomeExpenseRecordValue.incomeExpenseMoney}}</p>
+        <p class="list-info-money" v-if="incomeExpenseRecordValue.incomeExpenseDiv==='02'">- {{incomeExpenseRecordValue.incomeExpenseMoney}}</p>
+        <p>{{incomeExpenseRecordValue.explain}}</p>
+      </div>
+    </cell-box>
+    </mt-loadmore>
+    <confirm v-model="showBand"
+      title="解除支付宝绑定?"
+      @on-confirm="onConfirm">
+    </confirm>
+  </div>
+</template>
+
+<script>
+  import {XHeader, Group, Cell, CellBox, Confirm} from 'vux'
+  import { Loadmore, Indicator } from 'mint-ui'
+
+  export default {
+    name: 'account-fund',
+    components: {XHeader, Group, Cell, CellBox, Loadmore, Confirm, Indicator},
+    data() {
+      return {
+        userMoney: '0.00',
+        todayIncome: '0.00',
+        totalIncome: '0.00',
+        allLoaded: false,
+        incomeExpenseRecordValues: [],
+        totalPages: '',
+        form: {
+          page: '',
+          size: '6'
+        },
+        showBand: false,
+        alipayAccountNum: '',
+        weChatAccountNum: ''
+      }
+    },
+    created: function () {
+      Indicator.open()
+      this.init()
+    },
+    methods: {
+      init: function () {
+        this.$store.dispatch('getUserMoney', this.form).then(res => {
+          if (res.data.code === '200') {
+            this.userMoney = res.data.data
+          }
+          return this.$store.dispatch('accountIncome', this.form).then(res => {
+            if (res.data.code === '200') {
+              this.todayIncome = res.data.data.todayIncome
+              this.totalIncome = res.data.data.totalIncome
+            }
+            return this.$store.dispatch('getCashAccount', this.form).then(res => {
+              if (res.data.code === '200') {
+                this.alipayAccountNum = res.data.data.alipayAccountNum
+                this.weChatAccountNum = res.data.data.weChatAccountNum
+              }
+              return this.$store.dispatch('getMoneyList', this.form).then(res => {
+                if (res.data.code === '200') {
+                  console.log(res.data)
+                  this.incomeExpenseRecordValues = this.incomeExpenseRecordValues.concat(res.data.data.incomeExpenseRecordValues)
+                  this.totalPages = res.data.data.totalPages
+                  if (this.form.page === this.totalPages || this.totalPages === 0) {
+                    this.allLoaded = true// 若数据已全部获取完毕
+                  } else {
+                    this.allLoaded = false
+                  }
+                  setTimeout(() => {
+                    if (this.$refs.loadmore) {
+                      this.$refs.loadmore.onTopLoaded()
+                    }
+                    if (this.$refs.loadmore) {
+                      this.$refs.loadmore.onBottomLoaded()
+                    }
+                  }, 1500)
+                }
+                Indicator.close()
+              })
+            })
+          })
+        })
+      },
+      gotoDetail: function (index) {
+        this.$router.push({
+          path: '/user/fund/detail',
+          query: {recordId: this.incomeExpenseRecordValues[index].recordId, accountId: this.incomeExpenseRecordValues[index].accountId}
+        })
+      },
+      gotoWithdrawals: function (index) {
+        if (!this.alipayAccountNum && !this.weChatAccountNum) {
+          this.$vux.toast.text('请绑定支付宝账户')
+          return
+        }
+        this.$router.push({
+          path: '/user/fund/withdrawals',
+          query: {
+            uM: this.userMoney,
+            alipay: this.alipayAccountNum ? 'true' : 'false',
+            wechat: this.weChatAccountNum ? 'true' : 'false'
+          }
+        })
+      },
+      goUserAlipay: function () {
+        if (this.alipayAccountNum) {
+          this.showBand = true
+        } else {
+          this.$router.push({
+            path: '/user/fund/alipay',
+            query: {alipayAccountNum: this.alipayAccountNum}
+          })
+        }
+      },
+      onConfirm: function () {
+        this.$store.dispatch('relieveBandAlipay', this.form).then(res => {
+          if (res.data.code === '200') {
+            this.$vux.toast.text('解绑成功')
+            this.showBand = false
+            this.$store.dispatch('getCashAccount', this.form).then(res => {
+              if (res.data.code === '200') {
+                this.alipayAccountNum = res.data.data.alipayAccountNum
+                this.weChatAccountNum = res.data.data.weChatAccountNum
+              }
+            })
+          } else {
+            this.$vux.toast.text(res.data.message)
+          }
+        })
+      },
+      loadTop () {
+        this.form.page = 0
+        this.incomeExpenseRecordValues = []
+        this.init()
+      },
+      loadBottom () {
+        this.form.page++
+        this.init()
+      }
+    }
+  }
+</script>
+
+<style scoped>
+  .account-fund {
+    background: #f1f1f1;
+    padding: 45px 0;
+  }
+  .account-fund .weui-cell{
+    font-size: 14px;
+  }
+  .header{
+    background: #d86372;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+  }
+  .enchashment{
+    color: #FFF !important;
+  }
+  .header-con{
+    background: #d86372;
+    color: #FFF;
+    text-align: center;
+    padding: 20px;
+  }
+  .header-income{
+    background: #c86372;
+    color: #FFF;
+    text-align: center;
+    padding: 10px 20px;
+  }
+  .color-gray{
+    color: #f1f1f1
+  }
+  .today-income{
+    font-size: 28px;
+  }
+  .control {
+    height: 40px;
+    line-height: 40px;
+    padding: 10px 15px 0;
+    background: #fff;
+    margin-top: 15px;
+  }
+  .control-p {
+    text-align: right;
+    padding: 0 15px 5px;
+    background: #fff;
+  }
+  .control span{
+    float: left;
+    line-height: 22px;
+    font-size: 14px;
+    padding-left: 10px;
+    border-left: 7px solid #d86372;
+  }
+  .cell-list{
+    background: #FFF;
+  }
+  .list-time{
+    width: 130px;
+  }
+  .list-info{
+    line-height: 30px;
+  }
+  .list-info-money{
+    font-weight: 600;
+  }
+</style>
+<style>
+  .header.vux-header .vux-header-left .left-arrow:before {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #fff;
+    border-width: 1px 0 0 1px;
+    -webkit-transform: rotate(315deg);
+    transform: rotate(315deg);
+    top: 8px;
+    left: 7px;
+  }
+  .fund-group .weui-cells{
+    margin: 0;
+  }
+  </style>

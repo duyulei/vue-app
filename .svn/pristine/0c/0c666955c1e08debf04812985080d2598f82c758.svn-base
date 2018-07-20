@@ -1,0 +1,235 @@
+<template>
+  <div class="more-job">
+    <x-header class="header" :left-options="{backText: ''}">
+      <span v-if="form.recruitDiv === '01'">校园招聘</span>
+      <span v-if="form.recruitDiv === '02'">全职招聘</span>
+      <span v-if="form.recruitDiv === '03'">实习/兼职</span>
+      <span v-if="form.recruitDiv === '04'">合伙人招募</span>
+      <i @click="search()" style="color: #FFF; font-size: 24px;" slot="right" class="iconfont icon-search"></i>
+    </x-header>
+    <mt-loadmore :top-method="loadTop" :bottom-method="loadBottom" :bottom-all-loaded="allLoaded" :auto-fill="false"
+                 ref="loadmore">
+    <div v-if="positionValues[0]" class="more-next">
+        <div class="list-content" @click="gotoDetail(index)" v-for="(positionValue, index) in positionValues"
+             :key="index">
+          <div class="job-title">
+            <span class="job-name">{{positionValue.positionName}}</span>
+            <span class="co-name">{{positionValue.salary}}K</span>
+          </div>
+          <div class="ul-box">
+            <ul>
+              <li class="select-li select-margin"><span class="title-name">{{positionValue.workplace}}</span></li>
+              <li class="select-li select-margin"><span class="title-name">{{positionValue.jobTypeDivView}}</span></li>
+              <li class="select-li select-margin"><span class="title-name">{{positionValue.recruitNumber}}人</span></li>
+              <li class="select-li select-margin"><span class="title-name">{{positionValue.education}}</span></li>
+              <li class="select-li select-margin title-time-box"><span
+                class="title-salary">{{positionValue.time}}</span></li>
+            </ul>
+          </div>
+          <div class="job-compy">
+            <div class="compy-img">
+              <img width="100%" :src="positionValue.companyLogo"/>
+            </div>
+            <div class="compy-info">
+              <p style="font-size: 15px; color:#666">{{positionValue.compyName}}</p>
+              <p>{{positionValue.nature}} | {{positionValue.lnasset}}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div v-else style="margin-top:20px; text-align: center">
+        <i style="font-size: 22px;" slot="icon" class="iconfont icon-icon-no-data"></i>
+        <p style="font-size: 18px; margin-top:10px;">暂无数据</p>
+      </div>
+    </mt-loadmore>
+  </div>
+</template>
+
+<script>
+  import {XHeader} from 'vux'
+  export default {
+    name: 'more-job',
+    components: {XHeader},
+    data () {
+      return {
+        loading: true,
+        allLoaded: false,
+        positionValues: [],
+        workplaces: '',
+        eduResourceList: '',
+        totalPages: '',
+        form: {
+          positionId: '',
+          workplace: '',
+          education: '',
+          positionName: '',
+          more: '01',
+          page: '',
+          size: '6',
+          recruitDiv: ''
+        }
+      }
+    },
+    created () {
+      if (this.$route.query.recruitDiv){
+        this.form.recruitDiv = this.$route.query.recruitDiv
+      }
+      this.init()
+    },
+    methods: {
+      init: function () {
+        this.$store.dispatch('getHoPosList', this.form).then(res => {
+          if (res.data.code === '200') {
+            this.positionValues = this.positionValues.concat(res.data.data.positionValues)
+            this.workplaces = res.data.data.workplaces
+            this.totalPages = res.data.data.totalPages
+            if (this.form.page === this.totalPages || this.totalPages === 0) {
+              this.allLoaded = true// 若数据已全部获取完毕
+            } else {
+              this.allLoaded = false
+            }
+          }
+          setTimeout(() => {
+            if (this.$refs.loadmore) {
+              this.$refs.loadmore.onTopLoaded()
+            }
+            if (this.$refs.loadmore) {
+              this.$refs.loadmore.onBottomLoaded()
+            }
+          }, 1500)
+        })
+      },
+      gotoDetail: function (index) {
+        this.form.positionId = this.positionValues[index].positionId
+        this.$router.push({
+          path: '/recruit/job',
+          query: {positionId: this.positionValues[index].positionId, recruitDiv: this.form.recruitDiv}
+        })
+      },
+      search: function () {
+        this.$router.push({
+          path: '/recruit/morejob/search',
+          query: {workplaces: this.workplaces, recruitDiv: this.form.recruitDiv}
+        })
+      },
+      loadTop () {
+        this.form.page = 0
+        this.positionValues = []
+        this.init()
+      },
+      loadBottom () {
+        console.log(this.allLoaded)
+        this.form.page++
+        this.init()
+      }
+    }
+  }
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+ .more-job {
+    height: 100%;
+    background: #f1f1f1;
+ }
+ .more-job{
+   padding-top: 45px;
+ }
+ 
+.header{
+  background: #d86372;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+}
+.header-input{
+  width: 100%;
+  height: 100%;
+  color: #CCC;
+  border: none;
+  border-radius: 4px;
+  text-align: left;
+  background: #FFF;
+  font-size: 14px;
+  padding-left: 15px;
+}
+.list-content {
+    display: inline-block;
+    width: 100%;
+    background-color: #FFF;
+    margin-bottom: 7px;
+}
+.job-title {
+    margin: 10px 0 0;
+    color: #6B6B6B;
+}
+.job-title .job-name {
+    margin-left: 20px;
+    font-size: 17px;
+    font-weight: 600;
+    width: 78%;
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.job-title .co-name {
+    display: inline-block;
+    float: right;
+    margin: 3px 20px 0 0;
+    font-size: 13px;
+    color: #D86370;
+}
+.ul-box {
+    margin-left: 20px;
+}
+.list-content .select-li {
+    height: 30px;
+    line-height: 30px;
+    width: auto;
+    font-size: 12px;
+    margin-right: 15px;
+    color: #AAA;
+    display: block;
+    float: left;
+}
+.list-content .title-time-box{
+    float: right !important;
+    width: auto;
+    margin-right: 20px;
+    font-size: 12px;
+}
+.job-compy {
+    padding: 10px 20px;
+    clear: both;
+}
+.compy-img {
+    width: 50px;
+    margin-right: 20px;
+    display: inline-block;
+    float: left;
+}
+.compy-info {
+    line-height: 25px;
+    display: inline-block;
+    color: #aaa;
+    font-size: 12px;
+}
+</style>
+
+<style>
+  .header.vux-header .vux-header-left .left-arrow:before {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #fff;
+    border-width: 1px 0 0 1px;
+    -webkit-transform: rotate(315deg);
+    transform: rotate(315deg);
+    top: 8px;
+    left: 7px;
+  }
+</style>

@@ -1,0 +1,109 @@
+<template>
+  <div class="privacy">
+    <x-header class="header" :left-options="{backText: ''}">隐私设置</x-header>
+    <mt-radio
+      align="right"
+      title="屏蔽公司"
+      v-model="radio"
+      :options="options">
+    </mt-radio>
+    <mt-radio class="company" @change="change()"
+      align="right"
+      title="简历中显示的信息"
+      v-model="radio1"
+      :options="options1">
+    </mt-radio>
+  </div>
+</template>
+
+<script>
+  import { XHeader } from 'vux'
+
+  export default {
+    name: 'privacy',
+    components: { XHeader },
+    data() {
+      return {
+        radio: '01',
+        options: [
+          {
+            label: '所有公司都能看到我',
+            value: '01'
+          },
+          {
+            label: '只有投递才能看到我的简历',
+            value: '02'
+          }
+        ],
+        radio1: '01',
+        options1: [
+          {
+            label: '黄二（实名展示）',
+            value: '01'
+          },
+          {
+            label: '黄先生（匿名展示）',
+            value: '02'
+          }
+        ]
+      }
+    },
+    created() {
+    },
+    methods: {
+      change: function () {
+        console.log(this.radio1)
+      }
+    }
+  }
+</script>
+
+<style scoped>
+.privacy{
+  background: #f1f1f1;
+  padding: 40px 0;
+}
+.privacy .weui-cell{
+  font-size: 14px;
+}
+.header{
+  background: #d86372;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+</style>
+<style>
+  .header.vux-header .vux-header-left .left-arrow:before {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #fff;
+    border-width: 1px 0 0 1px;
+    -webkit-transform: rotate(315deg);
+    transform: rotate(315deg);
+    top: 8px;
+    left: 7px;
+  }
+  .privacy .mint-radiolist-title{
+    font-size: 14px;
+    display: block;
+    margin: 0;
+    color: #000;
+    background: #FFF;
+    padding: 10px 15px;
+    font-weight: 600;
+  }
+  .company .mint-radiolist-title{
+    margin: 15px 0 0;
+  }
+  .privacy .mint-cell-wrapper{
+    font-size: 14px;
+  }
+  .privacy .mint-radio-input:checked + .mint-radio-core {
+    background-color: #d86372;
+    border-color: #d86372;
+  }
+</style>

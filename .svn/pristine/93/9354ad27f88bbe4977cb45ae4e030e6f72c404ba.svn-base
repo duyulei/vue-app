@@ -1,0 +1,170 @@
+<template>
+  <div class="account-fund">
+    <x-header class="header" :left-options="{backText: ''}" >账户资金<a class="enchashment" slot="right">提现</a></x-header>
+    <div class="header-con">
+      <p class="today-income">￥{{userMoney}}</p>
+      <p class="color-gray">账户资金</p>
+    </div>
+    <el-row class="header-income">
+      <el-col :span='12'>
+        <div>
+          <p class="color-gray">今日收益</p>
+          <p>￥{{todayIncome}}</p>
+        </div>
+      </el-col>
+      <el-col :span='12'>
+        <div>
+          <p class="color-gray">累计收益</p>
+          <p>￥{{totalIncome}}</p>
+        </div>
+      </el-col>
+    </el-row>
+    <div style="clear: both"></div>
+    <group class="fund-group">
+      <cell title="支付宝账户" is-link :link="{path:'/user/fund/alipay'}" value="157363525@alipay.com"></cell>
+      <cell title="微信账户" is-link :link="{path:''}" value="未绑定"></cell>
+    </group>
+    <div class="control">
+      <span>收提记录</span>
+    </div>
+    <p class="control-p">2017/12</p>
+    <cell-box is-link :link="{path:'/user/fund/detail'}" class="cell-list">
+      <div class="list-time">
+        12/6
+      </div>
+      <div class="list-info">
+        <p class="list-info-money">+ ￥56</p>
+        <p>全秦汇智成都有限公司</p>
+      </div>
+    </cell-box>
+    <cell-box is-link :link="{path:'/user/fund/detail'}" class="cell-list">
+      <div class="list-time">
+        12/5
+      </div>
+      <div class="list-info">
+        <p class="list-info-money">- ￥100</p>
+        <p>提现</p>
+      </div>
+    </cell-box>
+  </div>
+</template>
+
+<script>
+  import {XHeader, Group, Cell, CellBox} from 'vux'
+
+  export default {
+    name: 'account-fund',
+    components: {XHeader, Group, Cell, CellBox},
+    data() {
+      return {
+        userMoney: '0.00',
+        todayIncome: '0.00',
+        totalIncome: '0.00'
+      }
+    },
+    created: function () {
+      this.init()
+    },
+    methods: {
+      init: function () {
+        this.$store.dispatch('getUserMoney', this.form).then(res => {
+          if (res.data.code === '200') {
+            this.userMoney = res.data.data
+          }
+        })
+        this.$store.dispatch('accountIncome', this.form).then(res => {
+          if (res.data.code === '200') {
+            this.todayIncome = res.data.data.todayIncome
+            this.totalIncome = res.data.data.totalIncome
+          }
+        })
+      }
+    }
+  }
+</script>
+
+<style scoped>
+  .account-fund {
+    background: #f1f1f1;
+    padding: 45px 0;
+  }
+  .account-fund .weui-cell{
+    font-size: 14px;
+  }
+  .header{
+    background: #d86372;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+  }
+  .enchashment{
+    color: #FFF !important;
+  }
+  .header-con{
+    background: #d86372;
+    color: #FFF;
+    text-align: center;
+    padding: 20px;
+  }
+  .header-income{
+    background: #c86372;
+    color: #FFF;
+    text-align: center;
+    padding: 10px 20px;
+  }
+  .color-gray{
+    color: #f1f1f1
+  }
+  .today-income{
+    font-size: 28px;
+  }
+  .control {
+    height: 40px;
+    line-height: 40px;
+    padding: 10px 15px 0;
+    background: #f8f8f8;
+  }
+  .control-p {
+    text-align: right;
+    padding: 0 15px 5px;
+    background: #f8f8f8;
+  }
+  .control span{
+    float: left;
+    line-height: 22px;
+    font-size: 14px;
+    padding-left: 10px;
+    border-left: 7px solid #d86372;
+  }
+  .cell-list{
+    background: #FFF;
+  }
+  .list-time{
+    width: 60px;
+  }
+  .list-info{
+    line-height: 30px;
+  }
+  .list-info-money{
+    font-weight: 600;
+  }
+</style>
+<style>
+  .header.vux-header .vux-header-left .left-arrow:before {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #fff;
+    border-width: 1px 0 0 1px;
+    -webkit-transform: rotate(315deg);
+    transform: rotate(315deg);
+    top: 8px;
+    left: 7px;
+  }
+  .fund-group .weui-cells{
+    margin: 0;
+  }
+  </style>

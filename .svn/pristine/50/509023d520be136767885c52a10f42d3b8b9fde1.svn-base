@@ -1,0 +1,102 @@
+<template>
+  <div class="select-city">
+    <x-header  class="header" :left-options="{showBack: false}">选择城市
+      <img slot="right" @click="goBack()" width="18px" src="../../assets/close.png"/>
+    </x-header>
+     <div class="box">
+      <checker @on-change="change" v-model="workplace" default-item-class="demo1-item" selected-item-class="demo1-item-selected">
+        <div class="box-div" v-for="(item, index) in workplaces" :key="index">
+          <checker-item :value="item">{{item}}</checker-item>
+        </div>
+      </checker>
+    </div>
+  </div>
+</template>
+
+<script>
+  import {Checker, CheckerItem, XHeader} from 'vux'
+  export default {
+    name: 'select-city',
+    components: {Checker, CheckerItem, XHeader},
+    data () {
+      return {
+        workplaces: '',
+        workplace: '',
+        recruitDiv: ''
+      }
+    },
+    created () {
+      this.workplaces = this.$route.query.workplaces
+      this.skip = this.$route.query.skip
+      this.recruitDiv = this.$route.query.recruitDiv
+    },
+    methods: {
+      goBack: function () {
+        this.$router.go(-1)
+      },
+      change: function () {
+        console.log(this.workplace)
+        this.skip ++
+        this.$router.replace({
+          path: '/recruit/morejob/search',
+          query: {recruitDiv: this.recruitDiv, workplace: this.workplace, workplaces: this.workplaces, skip: this.skip}
+        })
+      }
+    }
+  }
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+ .select-city {
+    height: 100%;
+    background: #fff;
+    padding-top: 45px;
+ }
+.header{
+  background: #d86372;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+}
+.header-input{
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 20px;
+  text-align: center;
+  background: #FFF;
+}
+.header-left{
+  color: #FFF;
+}
+.header-left img{
+  float: right;
+}
+
+.box {
+  padding: 15px;
+}
+.box-div{
+  width: 33%;
+  display: inline-block;
+  text-align: center;
+  padding: 10px 0;
+}
+.demo1-item {
+  border: 1px solid #ececec;
+  padding: 5px 15px;
+  border-radius: 5px;
+}
+.demo1-item-selected {
+  border: 1px solid #d86372;
+}
+</style>
+
+<style>
+  .vux-header .vux-header-right a {
+    color: #FFF !important;
+  }
+</style>

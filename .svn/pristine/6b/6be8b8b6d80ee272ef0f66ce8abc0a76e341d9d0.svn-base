@@ -1,0 +1,196 @@
+<template>
+  <div class="user-info-edit" v-if="isLoading">
+    <div class="user-header">
+      <el-upload
+        class="avatar-uploader"
+        action="https://www.t021.top/bolego/file/upload"
+        :show-file-list="false"
+        :on-success="handleAvatarSuccess"
+        :before-upload="beforeAvatarUpload">
+        <img v-if="headAddr" width="100%" height="100%" :src="headAddr" class="avatar">
+        <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+        <div class="el-upload__tip" slot="tip">只能上传jpg/png文件，且不超过5MB</div>
+      </el-upload>
+    </div>
+    <group>
+      <x-input class="user-defined" title="姓名" v-model="form.realName" placeholder="请填写姓名"></x-input>
+      <popup-radio class="user-defined" title="性别" :options="sexs" v-model="form.gender" placeholder="请选择性别"></popup-radio>
+      <datetime class="user-defined" title="出生" :min-year='1900' v-model="form.birthday" placeholder="请选择生日"></datetime>
+      <popup-radio class="user-defined" title="工作状态" :options="workType" v-model="form.workState" placeholder="请选择工作状态"></popup-radio>
+      <popup-picker class="user-defined" title="城市" :data="list" :columns="2" v-model="cityCodes" @on-change="onChange"
+                    show-name placeholder="请选择城市"></popup-picker>
+      <x-input class="user-defined" title="邮箱" v-model="form.email" placeholder="请填写邮箱"></x-input>
+    </group>
+    <group class="basic-info">
+      <cell style="text-align:center;" title="完善更多" is-link :arrow-direction="showContent ? 'up' : 'down'"
+      @click.native="showContent = !showContent"></cell>
+      <div v-if="showContent">
+        <x-input title="身高" v-model="form.height" placeholder="请填写身高"></x-input>
+        <x-input title="民族" v-model="form.nation" placeholder="请填写民族"></x-input>
+        <popup-radio title="政治面貌" :options="politicType" v-model="form.politicsStatus"  placeholder="请选择政治面貌"></popup-radio>
+        <popup-radio title="婚姻状况" :options="marryType" v-model="form.marriageDiv" placeholder="请选择婚姻状况"></popup-radio>
+        <x-input title="QQ" v-model="form.qqNo" placeholder="请填写QQ号"></x-input>
+        <x-input title="微信" v-model="form.weCharNo" placeholder="请填写微信号"></x-input>
+      </div>
+    </group>
+    <x-button class="basic-btn" type="warn" @click.native="save">保存</x-button>
+  </div>
+</template>
+
+<script>
+  import {Cell, Group, XInput, PopupRadio, Calendar, Datetime, XButton, PopupPicker} from 'vux'
+  import commonMixin from '@/mixins/common'
+
+  export default {
+    name: 'user-info-edit',
+    components: {Cell, Group, XInput, PopupRadio, Calendar, Datetime, XButton, PopupPicker},
+    mixins: [commonMixin],
+    data() {
+      return {
+        showContent: false,
+        images: [{url: this.headAddr}],
+        isLoading: true,
+        headAddr: '',
+        dicResourceList: '',
+        list: [],
+        cityCodes: [],
+        sexs: [{key: '01', value: '男'}, {key: '02', value: '女'}],
+        politicType: [{key: '01', value: '党员'}, {key: '02', value: '团员'}, {key: '03', value: '群众'}],
+        marryType: [{key: '01', value: '未婚'}, {key: '02', value: '已婚'}],
+        workType: [
+          {key: '01', value: '离职，随时到岗'},
+          {key: '02', value: '在职，考虑机会'},
+          {key: '03', value: '在职，不考虑机会'},
+          {key: '04', value: '我是应届生'},
+          {key: '05', value: '在读，寻找实习'},
+          {key: '06', value: '在读，在实习中'},
+          {key: '07', value: '创业找合伙人'}
+        ],
+        form: {
+          birthday: '',
+          cityCode: '',
+          email: '',
+          height: '',
+          nation: '',
+          marriageDiv: '',
+          politicsStatus: '',
+          qqNo: '',
+          weCharNo: '',
+          gender: '',
+          realName: '',
+          workState: '',
+          headAddr: ''
+        }
+      }
+    },
+    created: function () {
+      this.$store.dispatch('getResource').then(res => {
+        if (res.data.code === '200') {
+          this.dicResourceList = res.data.data.dicResourceList
+          var arr = []
+          for (var i = 0; i < this.dicResourceList.length; i++) {
+            var objParent = {}
+            objParent.name = this.dicResourceList[i].resourceName
+            objParent.value = this.dicResourceList[i].resourceCode
+            objParent.parent = 0
+            arr.push(objParent)
+            if (this.dicResourceList[i].children) {
+              for (var j = 0; j < this.dicResourceList[i].children.length; j++) {
+                var obj = {}
+                obj.name = this.dicResourceList[i].children[j].resourceName
+                obj.value = this.dicResourceList[i].children[j].resourceCode
+                obj.parent = this.dicResourceList[i].resourceCode
+                arr.push(obj)
+              }
+            }
+          }
+          this.list = arr
+        } else {
+          this.$vux.toast.text(res.data.message)
+        }
+      })
+    },
+    methods: {
+      save: function () {
+        this.$store.dispatch('initUserInfo', this.form).then(res => {
+          console.log(res)
+          if (res.data.code === '200') {
+            this.isLoading = true
+            this.goBackView()
+          } else {
+            this.$vux.toast.text(res.data.message)
+          }
+        })
+      },
+      onChange() {
+        this.form.cityCode = this.cityCodes[1]
+      },
+      handleAvatarSuccess(res, file) {
+        this.headAddr = file.url
+        console.log(res.data.fileUrl)
+        this.form.headAddr = res.data.fileUrl
+      },
+      beforeAvatarUpload(file) {
+        const isLt5M = file.size / 1024 / 1024 < 5
+
+        if (!isLt5M) {
+          this.$vux.toast.text('上传头像图片大小不能超过 5MB!')
+        }
+        return isLt5M
+      }
+    }
+  }
+</script>
+
+<style scoped>
+  .user-info-edit {
+    background: #f1f1f1;
+    padding-bottom: 40px;
+  }
+
+  .user-header {
+    padding: 10px 0;
+    margin: 10px 0;
+    background: #fff;
+  }
+
+  .basic-info {
+    padding-bottom: 40px;
+  }
+
+  .basic-btn {
+    position: fixed;
+    bottom: 0;
+    border-radius: 0;
+  }
+
+  .weui-btn_warn {
+    background: #D86471;
+  }
+
+  .avatar-uploader {
+    text-align: center;
+  }
+
+  .avatar-uploader .el-upload {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .avatar, .avatar-uploader-icon {
+    display: block;
+    font-size: 28px;
+    color: #8c939d;
+    text-align: center;
+    width: 90px;
+    height: 90px;
+    margin: 0 auto;
+    line-height: 80px;
+    border-radius: 50%;
+    border: 5px solid #f1f1f1;
+    box-shadow: 0 0 10px;
+  }
+</style>

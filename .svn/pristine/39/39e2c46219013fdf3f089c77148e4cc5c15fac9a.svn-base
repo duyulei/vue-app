@@ -1,0 +1,190 @@
+<template>
+  <div class="notice">
+    <x-header class="header" :left-options="{backText: ''}">服务提醒</x-header>
+    <mt-loadmore :top-method="loadTop" :bottom-method="loadBottom" :bottom-all-loaded="allLoaded" :auto-fill="false"
+                 ref="loadmore">
+      <div class="header-cell" v-for="noticeValue in noticeValues">
+        <div class="header-info">
+          <p><span class="position-title">{{noticeValue.noticeTitle}}</span></p>
+          <p class="position-time">{{formatMsgTime(noticeValue.updateTimestamp)}}</p>
+          <p class="position-company">{{noticeValue.noticeContent}}</span></p>
+        </div>
+        <p class="check">立即查看</p>
+      </div>
+    </mt-loadmore>
+  </div>
+</template>
+
+<script>
+  import { XHeader, CellBox } from 'vux'
+  import { Loadmore, Indicator } from 'mint-ui'
+
+  export default {
+    name: 'setting',
+    components: {XHeader, CellBox, 'mt-loadmore': Loadmore, Indicator},
+    data () {
+      return {
+        websocket: '',
+        totalPages: '',
+        allLoaded: false,
+        noticeValues: [],
+        form: {
+          page: '',
+          size: 5
+        }
+      }
+    },
+    created () {
+      Indicator.open()
+      this.init()
+    },
+    mounted () {
+      const that = this
+      window.onbeforeunload = function () {
+        that.websocket.close()
+      }
+    },
+    destroyed: function () {
+      this.websocket.close()
+      console.group('destroyed 销毁完成状态===============》')
+    },
+    methods: {
+      init () {
+        this.$store.dispatch('getUserInfo', this.form).then(res => {
+          let userId
+          if (res.data.code === '200') {
+            userId = res.data.data.userId
+          }
+          return this.$store.dispatch('getNoticeList', this.form).then(res => {
+            if (res.data.code === '200') {
+              this.noticeValues = this.noticeValues.concat(res.data.data.noticeValues)
+              this.totalPages = res.data.data.totalPages
+              if (this.form.page + 1 === this.totalPages || this.totalPages === 0) {
+                this.allLoaded = true// 若数据已全部获取完毕
+              } else {
+                this.allLoaded = false
+              }
+              //  判断当前浏览器是否支持WebSocket
+              if ('WebSocket' in window) {
+                this.websocket = new WebSocket('ws://139.129.110.63:8089/bolego/websocket/' + userId)
+              }
+              //  接收到消息的回调方法
+              const that = this
+              this.websocket.onmessage = function (event) {
+                console.log(event.data)
+                that.noticeValues.unshift(JSON.parse(event.data))
+                that.noticeValues.pop()
+              }
+            }
+            setTimeout(() => {
+              if (this.$refs.loadmore) {
+                this.$refs.loadmore.onTopLoaded()
+              }
+              if (this.$refs.loadmore) {
+                this.$refs.loadmore.onBottomLoaded()
+              }
+            }, 1500)
+            Indicator.close()
+          })
+        })
+      },
+      loadTop () {
+        this.form.page = 0
+        this.noticeValues = []
+        this.init()
+      },
+      loadBottom () {
+        console.log(this.allLoaded)
+        this.form.page++
+        this.init()
+      },
+      formatMsgTime (timespan) {
+        var dateTime = new Date(timespan)
+        var year = dateTime.getFullYear()
+        var month = dateTime.getMonth() + 1
+        var day = dateTime.getDate()
+        var hour = dateTime.getHours()
+        var minute = dateTime.getMinutes()
+//        var second = dateTime.getSeconds()
+        var now = new Date()
+        var nowNew = Date.parse(now)
+        var milliseconds = 0
+        var timeSpanStr
+        milliseconds = nowNew - timespan
+        if (milliseconds <= 1000 * 60 * 1) {
+          timeSpanStr = '刚刚'
+        } else if (1000 * 60 * 1 < milliseconds && milliseconds <= 1000 * 60 * 60) {
+          timeSpanStr = Math.round((milliseconds / (1000 * 60))) + '分钟前'
+        } else if (1000 * 60 * 60 * 1 < milliseconds && milliseconds <= 1000 * 60 * 60 * 24) {
+          timeSpanStr = Math.round(milliseconds / (1000 * 60 * 60)) + '小时前'
+        } else if (1000 * 60 * 60 * 24 < milliseconds && milliseconds <= 1000 * 60 * 60 * 24 * 15) {
+          timeSpanStr = Math.round(milliseconds / (1000 * 60 * 60 * 24)) + '天前'
+        } else if (milliseconds > 1000 * 60 * 60 * 24 * 15 && year === now.getFullYear()) {
+          timeSpanStr = month + '-' + day + ' ' + hour + ':' + minute
+        } else {
+          timeSpanStr = year + '-' + month + '-' + day + ' ' + hour + ':' + minute
+        }
+        return timeSpanStr
+      }
+    }
+  }
+</script>
+
+<style scoped>
+  .notice {
+    background: #fff;
+    padding: 45px 0;
+  }
+
+  .header {
+    background: #d86372;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+  }
+
+  .header-cell {
+    border-bottom: 1px solid #d9d9d9;
+  }
+
+  .header-info {
+    padding: 10px 15px;
+  }
+
+  .position-title {
+    font-size: 12px;
+    display: inline-block;
+  }
+
+  .position-time {
+    color: #ccc;
+    font-size: 12px;
+  }
+
+  .position-company {
+    font-size: 15px;
+    color: #000;
+  }
+
+  .check {
+    text-align: center;
+    background: #f1f1f1;
+    padding: 7px;
+  }
+</style>
+<style>
+  .header.vux-header .vux-header-left .left-arrow:before {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #fff;
+    border-width: 1px 0 0 1px;
+    -webkit-transform: rotate(315deg);
+    transform: rotate(315deg);
+    top: 8px;
+    left: 7px;
+  }
+</style>

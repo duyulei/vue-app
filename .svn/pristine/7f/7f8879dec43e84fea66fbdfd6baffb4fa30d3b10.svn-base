@@ -1,0 +1,206 @@
+<template>
+  <div class="project-edit">
+    <x-header class="header" :left-options="{backText: ''}">项目经验</x-header>
+    <div class="career-time">
+      <group class="group-time">
+        <datetime class="date-left user-defined" :min-year='1900' format="YYYY-MM" title="起始时间" v-model="form.startTime" placeholder="-请选择-"></datetime>
+      </group>
+      <group class="group-time">
+        <datetime class="date-right" :min-year='1900' format="YYYY-MM" title="至" v-model="form.endTime" placeholder="-请选择-"></datetime>
+      </group>
+    </div>
+    <group class="basic-info">
+        <x-input class="user-defined"  title="项目名称"  v-model="form.projName" placeholder="请填写项目名称"></x-input>
+        <popup-radio class="user-defined" title="公司名称" :options="coNames" v-model="form.workExpId" placeholder="请选择公司名称"></popup-radio>
+        <x-input title="项目职务"  v-model="form.projPosition" placeholder="请填写项目职务"></x-input>
+        <x-input title="项目职责"  v-model="form.projFunction" placeholder="请填写项目职责"></x-input>
+        <cell class="user-defined" title="项目描述"></cell>
+        <x-textarea placeholder="在此填写你的项目描述"  v-model="form.projDsc"></x-textarea>
+        <cell title="项目业绩"></cell>
+        <x-textarea placeholder="在此填写你的项目业绩"  v-model="form.projPerformance"></x-textarea>
+        <x-input title="项目链接"   v-model="form.projLink" placeholder="请填写项目链接"></x-input>
+        <div class="delete-box" v-if="form.projExpId">
+          <x-button class="delete-btn" type="default" style="border-radius:99px;" @click.native="deleteShow = true">删除本条</x-button>
+        </div>
+        <x-button class="basic-btn" type="warn" @click.native="save">保存</x-button>
+        <confirm v-model="deleteShow"
+          title="删除"
+          :close-on-confirm="false"
+          @on-confirm="onConfirm">
+            <p style="text-align:center;">删除项目经验将无法恢复，你确认删除？</p>
+        </confirm>
+    </group>
+  </div>
+</template>
+
+<script>
+  import { Group, XInput, XTextarea, Cell, XButton, Datetime, Confirm, PopupRadio, XHeader } from 'vux'
+
+  export default {
+    name: 'project-edit',
+    components: { Group, XInput, XTextarea, Cell, XButton, Datetime, Confirm, PopupRadio, XHeader },
+    data() {
+      return {
+        index: '',
+        deleteShow: false,
+        form: {
+          // 项目经验ID
+          projExpId: '',
+          startTime: '',
+          endTime: '',
+          projName: '',
+          projPosition: '',
+          projFunction: '',
+          projDsc: '',
+          projPerformance: '',
+          projLink: '',
+          // 公司列表
+          workExpId: ''
+        },
+        coNames: []
+      }
+    },
+    created() {
+      if (this.$route.query.projExpId){
+        this.form.projExpId = this.$route.query.projExpId
+        this.index = this.$route.query.index
+        console.log(this.$store.state.resume.resume.workStateValue.projExpValueList)
+        this.form.startTime = this.$store.state.resume.resume.workStateValue.projExpValueList[this.index].startTime
+        if (this.$store.state.resume.resume.workStateValue.projExpValueList[this.index].endTime === '至今'){
+          this.form.endTime = ''
+        } else {
+          this.form.endTime = this.$store.state.resume.resume.workStateValue.projExpValueList[this.index].endTime
+        }
+        this.form.projName = this.$store.state.resume.resume.workStateValue.projExpValueList[this.index].projName
+        this.form.projPosition = this.$store.state.resume.resume.workStateValue.projExpValueList[this.index].projPosition
+        this.form.projFunction = this.$store.state.resume.resume.workStateValue.projExpValueList[this.index].projFunction
+        this.form.projDsc = this.$store.state.resume.resume.workStateValue.projExpValueList[this.index].projDscEdit
+        this.form.projPerformance = this.$store.state.resume.resume.workStateValue.projExpValueList[this.index].projPerformanceEdit
+        this.form.projLink = this.$store.state.resume.resume.workStateValue.projExpValueList[this.index].projLink
+        this.form.workExpId = this.$store.state.resume.resume.workStateValue.projExpValueList[this.index].workExpId
+      }
+      this.$store.dispatch('getCo').then(res => {
+        if (res.data.code === '200') {
+          console.log(res.data.data)
+          this.coNames = res.data.data
+        } else {
+          this.$vux.toast.text(res.data.message)
+        }
+      })
+    },
+    methods: {
+      save: function () {
+        this.$store.dispatch('editProject', this.form).then(res => {
+          console.log(res)
+          if (res.data.code === '200') {
+            this.isLoading = true
+            this.$router.go(-1)
+          } else {
+            this.$vux.toast.text(res.data.message)
+          }
+        })
+      },
+      onConfirm () {
+        this.$store.dispatch('deleteProject', this.form).then(res => {
+          console.log(res)
+          if (res.data.code === '200') {
+            this.isLoading = true
+            this.$router.go(-1)
+          } else {
+            this.$vux.toast.text(res.data.message)
+          }
+        })
+      }
+    }
+  }
+</script>
+
+<style scoped>
+.project-edit{
+    background: #f1f1f1;
+    padding-top: 45px;
+}
+.career-time{
+  display: flex;
+  position: absolute;
+  width: 100%;
+}
+.basic-info{
+    padding: 42px 0 120px;
+}
+.vux-datetime {
+    padding-right: 0;
+    padding-left: 0;
+}
+.date-left{
+  padding-left: 15px;;
+}
+.date-right{
+  padding-right: 15px;;
+}
+.basic-btn{
+    position: fixed;
+    bottom: 0;
+    border-radius: 0;
+}
+.group-time{
+  flex: 1;
+}
+.weui-btn_warn{
+  background: #D86471;
+}
+.delete-box{
+  width: 100%;
+  position: fixed;
+  bottom: 60px;
+  border-radius: 0;
+}
+.delete-btn{
+  width: 80%;
+  border: 1px solid #D86471;
+  color: #D86471;
+}
+.header{
+  background: #d86372;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+}
+</style>
+<style>
+.project-edit .weui-textarea{
+  background: #f1f1f1;
+  padding:10px;
+  min-height:200px;
+}
+  .project-edit .weui-input{
+    text-align: right;
+  }
+.project-edit .vux-datetime-value .vux-cell-value {
+    font-size: 12px !important;
+}
+.vux-x-textarea:before{
+  border: none !important;
+}
+.date-left.weui-cell_access .weui-cell__ft:after{
+  display: none !important;
+}
+.date-right.weui-cell_access .weui-cell__ft:after{
+  display: none !important;
+}
+  .header.vux-header .vux-header-left .left-arrow:before {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #fff;
+    border-width: 1px 0 0 1px;
+    -webkit-transform: rotate(315deg);
+    transform: rotate(315deg);
+    top: 8px;
+    left: 7px;
+  }
+</style>
+

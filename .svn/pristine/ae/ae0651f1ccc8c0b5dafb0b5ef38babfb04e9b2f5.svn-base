@@ -1,0 +1,210 @@
+<template>
+  <div class="search-job">
+    <x-header  class="header" :left-options="{showBack: false}">
+      <div slot="left" class="header-left" @click="selectCity()"><span>{{form.workplace}}</span><img width="25px" src="../../assets/down.png"/></div>
+      <input v-model="form.positionName" class="header-input" type="text"  placeholder="请输入职位名称" @keyup="searchPosition" v-focus/>
+      <a slot="right" @click="goBack()">取消</a>
+    </x-header>
+    <mt-loadmore :bottom-method="loadBottom" :bottom-all-loaded="allLoaded" :auto-fill="false" ref="loadmore">
+    <div class="more-next">
+        <div class="list-content" @click="gotoDetail(index)" v-for="(positionValue, index) in positionValues"
+             :key="index">
+          <div class="job-title">
+            <span class="job-name">{{positionValue.positionName}}</span>
+            <span class="co-name">{{positionValue.salary}}K</span>
+          </div>
+          <div class="ul-box">
+            <ul>
+              <li class="select-li select-margin"><span class="title-name">{{positionValue.workplace}}</span></li>
+              <li class="select-li select-margin"><span class="title-name">{{positionValue.jobTypeDivView}}</span></li>
+              <li class="select-li select-margin"><span class="title-name">{{positionValue.recruitNumber}}人</span></li>
+              <li class="select-li select-margin"><span class="title-name">{{positionValue.education}}</span></li>
+              <li class="select-li select-margin title-time-box"><span
+                class="title-salary">{{positionValue.time}}</span></li>
+            </ul>
+          </div>
+          <div class="job-compy">
+            <div class="compy-img">
+              <img width="100%" src="../../assets/home_chengdu.png"/>
+            </div>
+            <div class="compy-info">
+              <p style="font-size: 15px; color:#666">{{positionValue.compyName}}</p>
+              <p>外资 | 不需要融资 | 50-150人</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mt-loadmore>
+  </div>
+</template>
+
+<script>
+  import {XHeader} from 'vux'
+  export default {
+    name: 'search-job',
+    components: {XHeader},
+    data () {
+      return {
+        positionValues: [],
+        workplaces: '',
+        totalPages: '',
+        allLoaded: false,
+        form: {
+          workplace: '成都',
+          education: '',
+          positionName: '',
+          more: '01',
+          page: '',
+          size: '6',
+          recruitDiv: '01'
+        }
+      }
+    },
+    created () {
+      if (this.$route.query.workplaces){
+        this.workplaces = this.$route.query.workplaces
+      }
+      if (this.$route.query.workplace){
+        this.form.workplace = this.$route.query.workplace
+      }
+    },
+    methods: {
+      init: function () {
+        this.$store.dispatch('getHoPosList', this.form).then(res => {
+          if (res.data.code === '200') {
+            this.positionValues = this.positionValues.concat(res.data.data.positionValues)
+            this.workplaces = res.data.data.workplaces
+            this.totalPages = res.data.data.totalPages
+            if (this.form.page === this.totalPages || this.totalPages === 0) {
+              this.allLoaded = true// 若数据已全部获取完毕
+            } else {
+              this.allLoaded = false
+            }
+          }
+          setTimeout(() => {
+            if (this.$refs.loadmore) {
+              this.$refs.loadmore.onBottomLoaded()
+            }
+          }, 1500)
+        })
+      },
+      loadBottom () {
+        console.log(this.allLoaded)
+        this.form.page++
+        this.init()
+      },
+      searchPosition () {
+        this.positionValues = []
+        this.init()
+      },
+      goBack: function () {
+        this.$router.go(-1)
+      },
+      selectCity: function () {
+        this.$router.push({
+          path: '/recruit/morejob/search/city',
+          query: {workplaces: this.workplaces}
+        })
+      }
+    }
+  }
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+ .search-job {
+    height: 100%;
+    background: #f1f1f1;
+    padding-top: 45px;
+ }
+.header{
+  background: #d86372;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+}
+.header-input{
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 20px;
+  text-align: center;
+  background: #FFF;
+}
+.header-left{
+  color: #FFF;
+}
+.header-left img{
+  float: right;
+}
+.list-content {
+    display: inline-block;
+    width: 100%;
+    background-color: #FFF;
+    margin-bottom: 7px;
+}
+.job-title {
+    margin: 10px 0 0;
+    color: #6B6B6B;
+}
+.job-title .job-name {
+    margin-left: 20px;
+    font-size: 17px;
+    font-weight: 600;
+    width: 170px;
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.job-title .co-name {
+    display: inline-block;
+    float: right;
+    margin: 3px 20px 0 0;
+    font-size: 13px;
+    color: #D86370;
+}
+.ul-box {
+    margin-left: 20px;
+}
+.list-content .select-li {
+    height: 30px;
+    line-height: 30px;
+    width: auto;
+    font-size: 12px;
+    margin-right: 15px;
+    color: #AAA;
+    display: block;
+    float: left;
+}
+.list-content .title-time-box{
+    float: right !important;
+    width: auto;
+    margin-right: 20px;
+    font-size: 12px;
+}
+.job-compy {
+    padding: 10px 20px;
+    clear: both;
+}
+.compy-img {
+    width: 50px;
+    margin-right: 20px;
+    display: inline-block;
+    float: left;
+}
+.compy-info {
+    line-height: 25px;
+    display: inline-block;
+    color: #aaa;
+    font-size: 12px;
+}
+</style>
+
+<style>
+  .vux-header .vux-header-right a {
+    color: #FFF !important;
+  }
+</style>

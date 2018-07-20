@@ -1,0 +1,321 @@
+<template>
+  <div class="job-view" v-loading.body="loading">
+    <div class="banner">
+      <div class="positiondetail-simple">
+        <div class="xiangqingtitle">
+          <div class="title">{{positionName}} </div>
+          <div>
+            <span><img style="vertical-align: middle; margin-right:5px;" width="20px" src="../../assets/address.png"/></span><span>{{workplace}}</span>
+          </div>
+        </div>
+        <div class="xiangqingcontain">
+          <el-row class="job-row" :gutter="5">
+            <el-col :span="12">
+              <div>
+                <span>招聘类别：</span>
+                <span>校园招聘</span>
+              </div>
+            </el-col>
+            <el-col :span="12">
+              <div>
+                <span>工作性质：</span>
+                <span>{{jobTypeDiv}}</span>
+              </div>
+            </el-col>
+            <el-col :span="12">
+              <div>
+                <span>薪资范围：</span>
+                <span style="color:#d86370">{{salary}}K</span>
+              </div>
+            </el-col>
+            <el-col :span="12">
+              <div>
+                <span>招聘人数：</span>
+                <span>{{recruitNumber}}</span>
+              </div>
+            </el-col>
+            <el-col :span="12">
+              <div>
+                <span>发布时间：</span>
+                <span>{{updateTimestamp}}</span>
+              </div>
+            </el-col>
+            <el-col :span="12">
+              <div>
+                <span>截止时间：</span>
+                <span>{{endTimestamp}}</span>
+              </div>
+            </el-col>
+          </el-row>
+          <ul class="xiangqinglist clearfix">
+            <div class="xiangqingtext">
+              <p>工作职责:</p>
+              <p v-html="responsibilities">
+              </p>
+              <!--<p>工作要求:</p>-->
+              <!--<p>-->
+                <!--<br> 具备平台，企业服务，SAAS，电商，招聘，社交或者其他商业化产品的产品管理经验者优先。-->
+                <!--<br> 具备实际（有事实可以论证）的跨职能团队的产品开发和管理经验者优先。-->
+                <!--<br> 参与过成功产品的迭代和发版。-->
+                <!--<br> 有创业公司工作的经历。-->
+                <!--<br> 能够主动，自驱，独立地工作。能够积极沟通，开放协作。-->
+                <!--<br>-->
+              <!--</p>-->
+              <br>
+              <p>任职资格：</p>
+              <p v-html="qualifications">
+              </p>
+            </div>
+          </ul>
+        </div>
+      </div>
+
+      <div class="detail clearfix">
+        <el-row>
+          <el-col :span="24">
+            <div class="footerbtn fl">
+              <span class="appled" :loading="applyLoad" v-if="isApply">已申请</span>
+              <el-button class="apply" :loading="applyLoad" @click="goToApply" v-else>现在申请</el-button>
+            </div>
+          </el-col>
+          <!--<el-col :span="6">-->
+            <!--<div class="share">-->
+              <!--<img style="" width="15px" src="../../assets/share.png"/>-->
+              <!--<div>分享</div>-->
+            <!--</div>-->
+          <!--</el-col>-->
+        </el-row>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  document.body.scrollTop = 0
+  document.documentElement.scrollTop = 0
+  export default {
+    name: 'job-view',
+    data() {
+      return {
+        loading: true,
+        applyLoad: true,
+        positionName: '',
+        jobTypeDiv: '',
+        salary: '',
+        recruitNumber: '',
+        updateTimestamp: '',
+        endTimestamp: '',
+        workplace: '',
+        responsibilities: '',
+        qualifications: '',
+        education: '',
+        isApply: false,
+        form: {
+          positionId: '',
+          accountToken: ''
+        },
+        backView: ''
+      }
+    },
+    created() {
+      this.form.positionId = this.$route.query.positionId
+      this.init()
+      this.goTop()
+      this.backView = this.$route.query.backView
+      this.$store.dispatch('getComPositionDetail', this.form).then(res => {
+        console.log(res)
+        if (res.data.code === '200') {
+          this.positionName = res.data.data.positionName
+          this.jobTypeDiv = res.data.data.jobTypeDiv
+          this.salary = res.data.data.salary
+          this.recruitNumber = res.data.data.recruitNumber
+          this.updateTimestamp = res.data.data.updateTimestamp
+          this.endTimestamp = res.data.data.endTimestamp
+          this.workplace = res.data.data.workplace
+          this.responsibilities = res.data.data.responsibilities
+          this.qualifications = res.data.data.qualifications
+          this.posieducationtionName = res.data.data.education
+          document.title = this.positionName
+        } else {
+        }
+        this.loading = false
+      })
+    },
+    methods: {
+      init: function () {
+        let login = JSON.parse(localStorage.getItem('login'))
+        if (login) {
+          this.form.accountToken = login.accountToken
+        }
+        this.$store.dispatch('isApply', this.form).then(res => {
+          console.log(res)
+          if (res.data.code === '200') {
+            console.log(res.data)
+            this.isApply = res.data.data
+          } else {
+          }
+          this.applyLoad = false
+        })
+      },
+      goTop: function () {
+        // Chrome
+        document.body.scrollTop = 0
+        // Firefox
+        document.documentElement.scrollTop = 0
+        // Safari
+        window.pageYOffset = 0
+      },
+      goBack: function () {
+        this.$router.push(this.backView)
+      },
+      goToApply: function () {
+        let login = JSON.parse(localStorage.getItem('login'))
+        if (login) {
+          this.form.accountToken = login.accountToken
+          if (!this.isApply) {
+            this.$store.dispatch('goToApply', this.form).then(res => {
+              console.log(res)
+              if (res.data.code === '200') {
+                console.log(res.data)
+                this.isApply = true
+              } else {
+              }
+              this.loading = false
+            })
+          }
+        } else {
+          window.location.href = 'http://m.bolego.top/#/login';
+        }
+      }
+    }
+  }
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+  .banner {
+    background-color: #FFF;
+    margin: 0;
+    max-width: 800px;
+  }
+
+  .positiondetail-simple {
+    padding: 20px;
+  }
+
+  .xiangqingtitle {
+    padding-bottom: 10px;
+    border-bottom: 1px dotted #444;
+  }
+  .xiangqingtitle .title{
+    font-size: 18px;
+    padding-bottom: 10px;
+    color: #d86370;
+  }
+  .zhiweixiangqing span {
+    font-size: 16px;
+  }
+
+  .xiangqingline {
+    width: 60px;
+    border-top: 2px solid #d86370;
+    margin-top: -2px;
+  }
+
+  ul.xiangqinglist {
+    margin: 5px 0px;
+    display: inline-block;
+    padding-bottom: 30px;
+  }
+
+  .clearfix {
+    zoom: 1;
+  }
+
+  li.nvalue {
+    width: 80px;
+    padding-right: 4px;
+  }
+
+  .xiangqinglist li {
+    float: left;
+    font-size: 13px;
+    list-style: none;
+    margin: 0px 10px 10px 0px;
+  }
+
+  .xiangqingtext {
+    margin-top: 20px;
+    font-size: 14px;
+  }
+
+  .xiangqingtext p {
+    margin: 0px 0px 5px 0px;
+    font-size: 13px;
+    line-height: 24px;
+  }
+
+  .footerbtn .apply {
+    font-size: 14px;
+    margin-right: 10px;
+    line-height: 35px;
+    padding: 6px 50px;
+    background: #d86370;
+    color: #FFF;
+    text-decoration: none;
+    cursor: pointer;
+    width: 100%;
+    border: none;
+    border-radius: 0;
+    height: 50px;
+  }
+
+  .footerbtn .appled {
+    font-size: 14px;
+    margin-right: 10px;
+    line-height: 35px;
+    padding: 6px 50px;
+    background: #ccc;
+    color: #444;
+    display: inline-block;
+    width: 100%;
+    border: none;
+    border-radius: 0;
+    height: 50px;
+    text-align: center;
+  }
+  .footerbtn .apply:hover {
+    background: #c86370;
+  }
+
+  .detail {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    height: 50px;
+    background: #FFF;
+  }
+
+  a {
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: #d86370;
+  }
+  .job-row{
+    padding:10px 0 24px;
+    border-bottom: 1px dotted #444;
+  }
+  .job-row span{
+    display: inline-block;
+    margin-top: 15px;
+  }
+  .share{
+    padding-top: 4px;
+    height: 50px;
+    text-align: center;
+    background: #f1f1f1;
+    border-top: 1px solid #ccc;
+  }
+</style>

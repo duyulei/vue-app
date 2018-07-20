@@ -1,0 +1,358 @@
+<template>
+  <div class="home-view">
+    <scroller 
+      :on-refresh="refresh"
+      :on-infinite="infinite">
+    <div class="header">
+      <span class="detail" @click="goToFund">详情</span>
+      <p class="color-gray">今日收益</p>
+      <p class="today-income">￥185</p>
+      <div>
+        <p class="color-gray">累计收益</p>
+        <p>￥684</p>
+      </div>
+      <div style="clear: both"></div>
+    </div>
+    <group class="home-group">
+      <cell-box is-link class="header-cell">
+          <div style="margin-right:20px;">
+            <img width="100%" src="../../assets/msg.png"/>
+          </div>
+          <ul class="header-info">
+            <li>又有一大波新职位更新了，快去查看吧。</li>
+            <li>有3家企业才看了你的简历，差一点就付费了。</li>
+          </ul>
+          <badge></badge>
+      </cell-box>
+    </group>
+    <el-row :gutter="7" style="height: 146px;">
+      <el-col :xs="10">
+        <div class="code">
+          <div class="score">
+            <span>625</span>
+            <p>能力分数</p>
+          </div>
+        </div>
+      </el-col>
+      <el-col :xs="14">
+        <div class="code-info">
+          <p class="color-999">简历完成度</p>
+          <div class="circle">
+            <x-circle style="width: 60px;display: inline-block;" :percent="80" :stroke-width="6" :trail-width="6" stroke-color="#d86372" trail-color="#ececec">
+              <span style="color: #d86372;">80%</span>
+            </x-circle>
+            <span class="edit-resume" @click="goToResume">编辑简历</span>
+          </div>
+          <p class="color-999">工作状态</p>
+          <!-- <div class="progress-bar" style="width: 80%;"><span class="progress-tag">80%</span></div> -->
+          <p>在职寻找机会<img class="icon-right" width="100%" src="../../assets/go.png"/></p>
+        </div>
+      </el-col>
+    </el-row>
+    <div class="hot-position">- 为你推荐的好职位 -</div>
+    
+    <div class="more-next">
+      <cell-box class="cell-box" is-link v-for="(positionValue, index) in positionValues" :key="index">
+        <div class="list-content" @click="gotoDetail(index)">
+          <div class="job-title">
+            <span class="job-name">{{positionValue.positionName}}</span>
+            <span class="co-name">{{positionValue.time}}</span>
+          </div>
+          <div class="job-title">
+            <span class="com-name">{{positionValue.compyName}}</span>
+          </div>
+          <div class="ul-box">
+            <ul>
+              <li class="select-li select-margin"><span class="title-icon"><i class="icon iconfont icon-weizhi"></i></span><span class="title-name">{{positionValue.workplace}}</span></li>
+              <li class="select-li select-margin"><span class="title-icon"><i class="icon iconfont icon-jinlingyingcaiwangtubiao28"></i></span><span class="title-name">{{positionValue.jobTypeDivView}}</span></li>
+              <li class="select-li select-margin"><span class="title-icon"><i class="icon iconfont icon-weibiaoti--"></i></span><span class="title-name">{{positionValue.recruitNumber}}人</span></li>
+              <li class="select-li select-margin"><span class="title-icon"><i class="icon iconfont icon-xueli"></i></span><span class="title-name">{{positionValue.education}}</span></li>
+              <li class="select-li select-margin title-time-box"><span class="title-salary">{{positionValue.salary}}K</span></li>
+            </ul>
+          </div>
+        </div>
+      </cell-box>
+   </div>
+    </scroller>
+  </div>
+</template>
+
+<script>
+  import {XCircle, XButton, Group, CellBox, Badge} from 'vux'
+
+  export default {
+    name: 'home-view',
+    components: {XCircle, XButton, Group, CellBox, Badge},
+    data() {
+      return {
+        loading: true,
+        positionValues: [],
+        workplaces: '',
+        eduResourceList: '',
+        totalPages: '',
+        form: {
+          positionId: '',
+          workplace: '',
+          education: '',
+          positionName: '',
+          more: '01',
+          page: '',
+          size: '6',
+          recruitDiv: '01'
+        }
+      }
+    },
+    created: function () {
+      this.init()
+      this.$emit('setTabbar', true);
+    },
+    methods: {
+      init: function () {
+        this.$store.dispatch('getHoPosList', this.form).then(res => {
+          if (res.data.code === '200') {
+            this.positionValues = this.positionValues.concat(res.data.data.positionValues)
+            this.workplaces = res.data.data.workplaces
+            this.totalPages = res.data.data.totalPages
+          } else {
+          }
+          this.loading = false
+        })
+        this.$store.dispatch('getResource', this.form).then(res => {
+          if (res.data.code === '200') {
+            this.eduResourceList = res.data.data.eduResourceList
+          }
+        })
+      },
+      gotoDetail: function (index) {
+        this.form.positionId = this.positionValues[index].positionId
+        this.$router.push({
+          path: '/recruit/job',
+          query: {positionId: this.positionValues[index].positionId}
+        })
+      },
+      goToFund: function () {
+        this.$router.push({path: '/user/fund'})
+      },
+      goToResume: function () {
+        this.$router.push({path: '/resume'})
+      },
+      refresh: function (done) {
+        console.log('refresh')
+        setTimeout(() => {
+          this.form.page = 0
+          this.positionValues = []
+          this.init()
+          done(true)
+        }, 1500)
+      },
+      infinite: function (done) {
+        let _this = this
+        console.log('infinite called..')
+        if (this.form.page === this.totalPages || this.totalPages === 0) {
+          setTimeout(() => {
+            done(true)
+          }, 1500)
+          return;
+        }
+        setTimeout(() => {
+          _this.form.page ++
+          _this.init()
+          done()
+        }, 1500)
+      }
+    }
+  }
+</script>
+
+<style scoped>
+  .home-view {
+    background: #f1f1f1;
+  }
+  .header{
+    position: relative;
+    background: #d86372;
+    color: #FFF;
+    text-align: center;
+    padding: 20px 20px 35px;
+  }
+  .detail{
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    height: 22px;
+    line-height: 22px;
+    padding: 0px 7px;
+    border: 1px solid #fff;
+    border-radius: 3px;
+    font-size: 12px;
+  }
+  .marquee{
+    position: absolute;
+    bottom: 0px;
+    left: 0;
+    background: #c86372;
+    padding: 5px;
+    opacity: 0.9;
+  }
+  .home-group{
+    margin: 7px 0;
+  }
+  .header-info li{
+    font-size: 13px;
+    width: 240px;
+    padding: 5px 0px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .header-cell .vux-badge{
+    position: absolute;
+    right: 30px;
+    top: 44%;
+  }
+  .color-gray{
+    color: #f1f1f1
+  }
+  .color-999{
+    color: #999
+  }
+  .today-income{
+    font-size: 28px;
+  }
+  .code{
+    height: 146px;
+    background: #FFF;
+    justify-content: center;
+    align-items: center;
+    display: -webkit-flex;
+  }
+  .score{
+    text-align: center;
+    line-height: 25px;
+  }
+  .score span{
+    font-size: 25px;
+  }
+  .code-info{
+    background: #FFF;
+    padding: 10px;
+    position: relative;
+  }
+  .circle{
+    align-items: center;
+    display: -webkit-flex;
+  }
+  .edit-resume{
+    position: absolute;
+    right: 10px;
+    height: 24px;
+    line-height: 24px;
+    padding: 0px 5px;
+    border: 1px solid #d86372;
+    border-radius: 3px;
+    font-size: 12px;
+  }
+  .icon-right{
+    float: right;
+    width: 15px;
+    margin-top: 4px;
+  }
+  .hot-position{
+    padding: 10px;
+    background: #FFF;
+    text-align: center;
+    margin-top: 7px;
+  }
+  .cell-box.weui-cell{
+    padding: 0px;
+  }
+ .list-content {
+    display: inline-block;
+    width: 100%;
+    background-color: #FFF;
+    border-top: 1px solid #F0F4F7;
+    border-bottom: 1px solid #F0F4F7;
+ }
+ .list-content:hover {
+    background-color: #f1f1f1;
+    cursor: pointer;
+ }
+ .list-content .select-li {
+    height: 30px;
+    line-height: 30px;
+    width: auto;
+    font-size: 12px;
+    margin-right: 15px;
+    color: #AAA;
+    display: block;
+    float: left;
+ }
+ 	.list-content .title-time-box {
+ 		float: right !important;
+ 		width: auto;
+    margin-right: 20px;
+    font-size: 12px;
+ 	}
+  .list-content .select-li .title-name {
+  	margin-left: 3px;
+  }
+  .list-content .select-li .title-salary {
+  	font-size: 14px;
+    color:#D86370;
+  }
+ .job-title {
+  	margin: 10px 0 0;
+  	color: #6B6B6B;
+  }
+ 
+ .job-title .job-name {
+    margin-left: 20px;
+    font-size: 14px;
+    color: #D86370;
+    width: 170px;
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+ }
+ .job-title .com-name {
+   margin-left: 20px;
+   font-size: 12px;
+ }
+ 
+ .job-title .co-name {
+ 	display: inline-block;
+ 	float: right;
+  margin: 3px 20px 0 0;
+  font-size: 13px;
+ }
+ .ul-box {
+ 	margin-left: 20px;
+ }
+ .go-icon{
+   position: absolute;
+   right: 15px;
+   top: 45%;
+ }
+
+
+
+
+
+
+
+
+
+
+  .progress-bar {
+    background: #D86471;
+    border-radius: 10px;
+    text-align: right;
+  }
+  .progress-tag {
+    font-size: 12px;
+    line-height: 20px;
+    color: white;
+    margin-right: 10px;
+  }
+</style>

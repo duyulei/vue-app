@@ -1,0 +1,112 @@
+<template>
+  <div class="delivery">
+    <x-header class="header" :left-options="{backText: ''}">投递记录</x-header>
+    <cell-box is-link :link="{path:'/recruit/job'}" class="header-cell">
+      <div class="header-img">
+        <img width="100%" src="../../assets/logo.jpg"/>
+      </div>
+      <div class="header-info">
+        <p><span class="position-title">Java工程师</span><span class="position-time">12:49</span></p>
+        <p class="position-company"><span class="position-address">成都</span><span>全秦汇智</span></p>
+        <p class="position-salary"><span>10-13K</span></p>
+      </div>
+    </cell-box>
+    <cell-box is-link :link="{path:'/recruit/job'}" class="header-cell">
+      <div class="header-img">
+        <img width="100%" src="../../assets/home_chengdu.png"/>
+      </div>
+      <div class="header-info">
+        <p><span class="position-title">node.js工程师</span><span class="position-time">16:09</span></p>
+        <p class="position-company"><span class="position-address">成都</span><span>天娱传媒</span></p>
+        <p class="position-salary"><span>18-19K</span></p>
+      </div>
+    </cell-box>
+    <cell-box is-link :link="{path:'/recruit/job'}" class="header-cell">
+      <div class="header-img">
+        <img width="100%" src="../../assets/logo.png"/>
+      </div>
+      <div class="header-info">
+        <p><span class="position-title">WEB前端工程师</span><span class="position-time">09:18</span></p>
+        <p class="position-company"><span class="position-address">南充</span><span>华谊兄弟</span></p>
+        <p class="position-salary"><span>11-15K</span></p>
+      </div>
+    </cell-box>
+  </div>
+</template>
+
+<script>
+  import { XHeader, CellBox } from 'vux'
+
+  export default {
+    name: 'delivery',
+    components: { XHeader, CellBox },
+    data() {
+      return {
+      }
+    },
+    created() {
+    },
+    methods: {
+    }
+  }
+</script>
+
+<style scoped>
+.delivery{
+  background: #fff;
+  padding: 45px 0;
+}
+.delivery .weui-cell{
+  font-size: 14px;
+}
+.delivery .weui-cell:last-child{
+  border-bottom: 1px solid #eee;
+}
+.header{
+  background: #d86372;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+.header-img{
+  width: 65px;
+  margin-right: 10px;
+}
+.position-title{
+  font-size: 16px;
+  color: #000;
+  margin-bottom: 5px;
+  display: inline-block;
+}
+.position-time{
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  color: #ccc;
+  font-size: 12px;
+}
+.position-company{
+  font-size: 12px;
+}
+.position-address{
+  margin-right: 10px;
+}
+.position-salary{
+  color: #d86372;
+}
+</style>
+<style>
+  .header.vux-header .vux-header-left .left-arrow:before {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #fff;
+    border-width: 1px 0 0 1px;
+    -webkit-transform: rotate(315deg);
+    transform: rotate(315deg);
+    top: 8px;
+    left: 7px;
+  }
+</style>

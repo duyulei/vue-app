@@ -1,0 +1,295 @@
+// The Vue build version to load with the `import` command
+// (runtime-only or standalone) has been set in webpack.base.conf with an alias.
+import Vue from 'vue'
+import App from './App'
+import router from './router'
+import axios from 'axios'
+import store from './store'
+import { ToastPlugin } from 'vux'
+import ElementUI from 'element-ui'
+import 'element-ui/lib/theme-default/index.css'
+import MintUI from 'mint-ui'
+import 'mint-ui/lib/style.css'
+import 'babel-polyfill'
+import promise from 'es6-promise'
+import './stylus/index.styl'
+import VueJsonp from 'vue-jsonp'
+import wx from 'weixin-js-sdk'
+
+promise.polyfill()
+
+Vue.use(ElementUI)
+Vue.use(ToastPlugin)
+Vue.use(MintUI)
+Vue.use(VueJsonp)
+
+Vue.config.productionTip = false
+axios.defaults.withCredentials = true
+axios.defaults.baseURL = 'https://api.bolego.top/bolego'
+// axios.defaults.baseURL = 'http://192.168.0.106:8085/bolego'
+axios.defaults.baseURL2 = 'https://api.bolego.top/company'
+// axios.defaults.baseURL2 = 'http://192.168.0.106:8088/company'
+
+store.registerModule('vux', {
+  state: {
+    isLoading: false,
+    direction: 'forward'
+  },
+  mutations: {
+    updateLoadingStatus (state, payload) {
+      state.isLoading = payload.isLoading
+    },
+    updateDirection (state, payload) {
+      state.direction = payload.direction
+    }
+  }
+})
+
+// simple history management
+const history = window.sessionStorage
+history.clear()
+let historyCount = history.getItem('count') * 1 || 0
+history.setItem('/', 0)
+
+router.beforeEach(function (to, from, next) {
+  document.title = to.name
+  if (from.query.wechatHeader) {
+    to.query.wechatHeader = true
+  }
+  if (!sessionStorage.getItem('firstUrl')) {
+    sessionStorage.setItem('firstUrl', window.location.href)
+  }
+
+  // alert(window.location.href)
+  let u = navigator.userAgent
+  let isIOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/)
+  axios({
+    url: 'get/jsapiticket',
+    method: 'post',
+    data: {
+      formUrl: isIOS ? sessionStorage.getItem('firstUrl') : window.location.href
+    },
+    transformRequest: [function (data) {
+      // Do whatever you want to transform the data
+      let ret = ''
+      for (let it in data) {
+        ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+      }
+      return ret
+    }],
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+    }
+  }).then(function (res) {
+    let nonceStr2 = res.data.data.nonceStr
+    let timestamp2 = res.data.data.timestamp
+    let signature = res.data.data.signature
+    wx.config({
+      debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+      appId: 'wx91c9b61b0a194602', // 必填，公众号的唯一标识
+      timestamp: timestamp2, // 必填，生成签名的时间戳
+      nonceStr: nonceStr2, // 必填，生成签名的随机串
+      signature: signature, // 必填，签名，见附录1
+      jsApiList: ['onMenuShareAppMessage', 'onMenuShareTimeline'] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+    })
+    console.log(to.fullPath)
+    wx.ready(function () {
+      wx.onMenuShareAppMessage({
+        title: to.name,
+        desc: '伯乐顾（隶属于全秦汇智科技成都有限公司），专注高质量人才库的打造，以人才职业成长发展为核心，依托优质互联网及线下相关资源，为人才提供额外丰厚回报，提供众多职业发展机会；为企业提供匹配人才资源。\n' +
+        '  我们是一个极其热爱开发人力资源的年轻的互联网团队。我们用心，付诸责任做这样伟大有意义的事情，打造专业人才服务平台。',
+        link: 'https://m.bolego.top/' + to.fullPath,
+        imgUrl: 'https://m.bolego.top/static/logo.ico'
+      })
+      wx.onMenuShareTimeline({
+        title: to.name,
+        desc: '伯乐顾（隶属于全秦汇智科技成都有限公司），专注高质量人才库的打造，以人才职业成长发展为核心，依托优质互联网及线下相关资源，为人才提供额外丰厚回报，提供众多职业发展机会；为企业提供匹配人才资源。\n' +
+        '  我们是一个极其热爱开发人力资源的年轻的互联网团队。我们用心，付诸责任做这样伟大有意义的事情，打造专业人才服务平台。',
+        link: 'https://m.bolego.top/' + to.fullPath,
+        imgUrl: 'https://m.bolego.top/static/logo.ico'
+      })
+    })
+    wx.error(function (res) {
+    })
+  }).catch(function (response) {
+  })
+
+  store.commit('updateLoadingStatus', {isLoading: true})
+
+  const toIndex = history.getItem(to.path)
+  const fromIndex = history.getItem(from.path)
+
+  // 配置返回
+  if (toIndex) {
+    if (!fromIndex || parseInt(toIndex, 10) > parseInt(fromIndex, 10) || (toIndex === '0' && fromIndex === '0')) {
+      store.commit('updateDirection', {direction: 'forward'})
+    } else {
+      store.commit('updateDirection', {direction: 'reverse'})
+    }
+  } else {
+    ++historyCount
+    history.setItem('count', historyCount)
+    to.path !== '/' && history.setItem(to.path, historyCount)
+    store.commit('updateDirection', {direction: 'forward'})
+  }
+
+  if (localStorage.getItem('accountToken')) {
+    next()
+  } else if (to.query.userToken && to.query.userToken !== '') {
+    store.commit('setAccountToken', to.query.userToken)
+    next()
+  } else if (to.query.unionid && to.query.unionid !== '') {
+    console.log('跳转到绑定页面')
+    console.log(to.query.unionid)
+    if (to.path !== '/wechat/bind') {
+      next({
+        path: '/wechat/bind',
+        query: {unionid: to.query.unionid}  // 将跳转的路由path作为参数，登录成功后跳转到该路由
+      })
+    } else {
+      next()
+    }
+  } else if (to.meta.requireAuth) {
+    // 判断该路由是否需要登录权限
+    // 通过vuex state获取当前的token是否存在
+    if (from.path === '/') {
+      next({
+        path: '/recruit'
+      })
+    } else {
+      gotoLoginView(to, from, next)
+    }
+  } else {
+    next()
+  }
+})
+
+function gotoLoginView (to, from, next) {
+  var ua = navigator.userAgent.toLowerCase()
+  console.log(ua)
+  // 判断是否为微信端
+  if (ua.match(/MicroMessenger/i)) {
+    axios({
+      url: '/get/authorizationUrl',
+      method: 'post',
+      data: {
+        redirectUri: 'https://m.bolego.top'
+      },
+      transformRequest: [function (data) {
+        let ret = ''
+        for (let it in data) {
+          ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+        }
+        return ret
+      }],
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+      }
+    }).then(function (response) {
+      if (response.data.code === '200') {
+        console.log(response.data.data)
+        window.location.href = response.data.data
+      }
+    })
+  } else {
+    next({
+      path: '/login'  // 将跳转的路由path作为参数，登录成功后跳转到该路由
+    })
+  }
+}
+
+router.afterEach(function (to) {
+  store.commit('updateLoadingStatus', {isLoading: false})
+})
+
+// http request 拦截器
+axios.interceptors.request.use(
+  config => {
+    if (localStorage.getItem('accountToken')) {
+      // 判断是否存在token，如果存在的话，则每个http header都加上token
+      // config.headers.Authorization = `${store.state.user.accountToken}`;
+      config.data.accountToken = localStorage.getItem('accountToken')
+      config.data.requestTime = new Date()
+    }
+    return config
+  },
+  err => {
+    return Promise.reject(err)
+  })
+
+// http response 拦截器
+axios.interceptors.response.use(
+  response => {
+    if (response) {
+      switch (response.data.code) {
+        case '401':
+          // 返回 401 清除token信息并跳转到登录页面
+          store.commit('clearAccountToken')
+          var ua = navigator.userAgent.toLowerCase()
+          console.log(ua)
+          // 判断是否为微信端
+          if (ua.match(/MicroMessenger/i)) {
+            axios({
+              url: '/get/authorizationUrl',
+              method: 'post',
+              data: {
+                redirectUri: 'https://m.bolego.top' + router.currentRoute.fullPath
+              },
+              transformRequest: [function (data) {
+                let ret = ''
+                for (let it in data) {
+                  ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+                }
+                return ret
+              }],
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+              }
+            }).then(function (response) {
+              if (response.data.code === '200') {
+                console.log(response.data.data)
+                window.location.href = response.data.data
+              }
+            })
+          } else {
+            router.push({path: '/login'})
+          }
+          break
+        case '00001':
+          router.replace({path: '/userinfo/init'})
+          break
+        case '00005':
+          axios({
+            url: '/update/token',
+            method: 'post',
+            data: {
+              accountToken: localStorage.getItem('accountToken')
+            },
+            transformRequest: [function (data) {
+              let ret = ''
+              for (let it in data) {
+                ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+              }
+              return ret
+            }],
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+            }
+          }).then(function (response) {
+            if (response.data.code === '200') {
+              store.commit('setAccountToken', response.data.data)
+            }
+          })
+          break
+      }
+    }
+    return response
+  })
+
+/* eslint-disable no-new */
+new Vue({
+  el: '#app',
+  router,
+  store,
+  ...App
+})

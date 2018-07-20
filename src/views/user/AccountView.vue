@@ -1,0 +1,95 @@
+<template>
+  <div class="account" :class="wechatHeader ? 'wechat-header' : ''">
+    <x-header v-if="!wechatHeader" class="header" :left-options="{backText: ''}">我的账号</x-header>
+    <group>
+      <cell title="手机号" :value="phone?phoneView:'未绑定'" is-link :link="{path:'/user/setting/account/reset-phone-one'}"></cell>
+      <cell title="邮箱" :value="email?emailView:'未绑定'" is-link @click.native="bandEmail"></cell>
+    </group>
+  </div>
+</template>
+
+<script>
+  import { XHeader, Group, Cell } from 'vux'
+
+  export default {
+    name: 'setting',
+    components: { XHeader, Group, Cell },
+    data() {
+      return {
+        wechatHeader: false,
+        phone: '',
+        email: ''
+      }
+    },
+    created() {
+      if (this.$route.query.wechatHeader){
+        this.wechatHeader = this.$route.query.wechatHeader
+      }
+      this.$store.dispatch('getAccountInfo').then(res => {
+        if (res.data.code === '200') {
+          this.phone = res.data.data.mobileNo
+          this.email = res.data.data.email
+        } else {
+          this.$vux.toast.text(res.data.message)
+        }
+      })
+    },
+    computed: {
+      phoneView: {
+        get () {
+          let start = this.phone.slice(0, 3)
+          let end = this.phone.slice(-4)
+          return start + '****' + end
+        }
+      },
+      emailView: {
+        get () {
+          let start = this.email.slice(0, 3)
+          let end = this.email.slice(-4)
+          return start + '****' + end
+        }
+      }
+    },
+    methods: {
+      bandEmail: function (){
+        if (this.email){
+          this.$router.push({path: '/user/setting/account/resetemailone', query: {email: this.email}})
+        } else {
+          this.$router.push({path: '/user/setting/account/bindemail'})
+        }
+      }
+    }
+  }
+</script>
+
+<style scoped>
+.account{
+  background: #f1f1f1;
+  padding: 45px 0;
+}
+.account .weui-cell{
+  font-size: 14px;
+}
+.header{
+  background: #d86372;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+}
+</style>
+<style>
+  .header.vux-header .vux-header-left .left-arrow:before {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #fff;
+    border-width: 1px 0 0 1px;
+    -webkit-transform: rotate(315deg);
+    transform: rotate(315deg);
+    top: 8px;
+    left: 7px;
+  }
+</style>

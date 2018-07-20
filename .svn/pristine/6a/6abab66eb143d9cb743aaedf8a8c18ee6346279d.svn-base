@@ -1,0 +1,1058 @@
+<template>
+  <div id="root" class="resume-view">
+    <x-header v-if="isLoading" class="header" @touchmove.prevent :left-options="{backText: ''}">
+      <div class="title" slot="overwrite-title" @click="showPopup">
+        {{resume.basicInfoValue.workStateView}}
+        <i class="iconfont icon-xiala"></i>
+      </div>
+      <i @click="showMenu" slot="right" style=" font-size: 25px;color: #FFF" class="iconfont icon-jia7"></i>
+    </x-header>
+    <resume-menu v-model="isShowMenu" @select-type="onSelectType" @affix-click="affixClick"
+                 :resume="resume"></resume-menu>
+
+    <div class="content" v-if="isLoading">
+      <model-title id="basicInfoValue" v-if="resume.basicInfoValue" title="基本信息"
+                   fontClass="icon-jibenxinxi"></model-title>
+      <div v-if="resume.basicInfoValue" class="ui-card container-fluid ui-card-info">
+        <div class="bg-img"></div>
+        <div class="header-info">
+          <div class="head-img">
+            <img
+              :src="resume.basicInfoValue.headAddr === null ? '/static/logo.ico' : resume.basicInfoValue.headAddr"
+              alt=""/>
+            <i @click="goUserInfoEditView" class="iconfont icon-bianji btn-control"></i>
+          </div>
+          <div class="username">
+            <span>{{resume.basicInfoValue.realName}}</span>
+            <i class="iconfont icon-nan" v-if="'01'==resume.basicInfoValue.gender" style="color: #7A8FB2"></i>
+            <i class="iconfont icon-nv" v-if="'02'==resume.basicInfoValue.gender" style="color: #D86471"></i>
+          </div>
+          <div class="base-info ">
+            <div v-if="resume.basicInfoValue.age">{{resume.basicInfoValue.age}}岁</div>
+            <div v-if="resume.basicInfoValue.cityView">现居{{resume.basicInfoValue.cityView}}</div>
+            <div v-if="resume.basicInfoValue.hightestEdu">{{resume.basicInfoValue.hightestEdu}}</div>
+            <div v-if="resume.basicInfoValue.workLife">{{resume.basicInfoValue.workLife}}</div>
+          </div>
+          <div class="ui-border-b" style="margin-bottom: 10px;margin-top: 10px"></div>
+          <div class="container-fluid base-info-list">
+            <div class="col-xs-6 item item-center" v-if="resume.basicInfoValue.height">
+              <i class="iconfont ui-label icon-shengao3"></i>
+              <span>{{resume.basicInfoValue.height}}cm</span>
+            </div>
+            <div class="col-xs-6 item item-center" v-if="resume.basicInfoValue.nation">
+              <i class="iconfont ui-label icon-minzu"></i>
+              <span>{{resume.basicInfoValue.nation}}</span>
+            </div>
+            <div class="col-xs-6 item item-center" v-if="resume.basicInfoValue.marriageDivView">
+              <i class="iconfont ui-label icon-wedding-banquet"></i>
+              <span>{{resume.basicInfoValue.marriageDivView}}</span>
+            </div>
+            <div class="col-xs-6 item item-center" v-if="resume.basicInfoValue.politicsStatusView">
+              <i class="iconfont ui-label icon-icon22"></i>
+              <span>{{resume.basicInfoValue.politicsStatusView}}</span>
+            </div>
+            <div class="col-xs-6 item item-center" v-if="resume.basicInfoValue.mobileNo">
+              <i class="iconfont ui-label icon-shouji"></i>
+              <span>{{resume.basicInfoValue.mobileNo}}</span>
+            </div>
+            <div class="col-xs-6 item item-center" v-if="resume.basicInfoValue.email">
+              <i class="iconfont ui-label icon-youxiang"></i>
+              <span>{{resume.basicInfoValue.email}}</span>
+            </div>
+            <div class="col-xs-6 item item-center" v-if="resume.basicInfoValue.weCharNo">
+              <i class="iconfont ui-label icon-weixin"></i>
+              <span>{{resume.basicInfoValue.weCharNo}}</span>
+            </div>
+            <div class="col-xs-6 item item-center" v-if="resume.basicInfoValue.qqNo">
+              <i class="iconfont ui-label icon-qq"></i>
+              <span>{{resume.basicInfoValue.qqNo}}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <model-title id="jobIntentionValue" title="职业意向"
+                   fontClass="icon-zhiwei"></model-title>
+      <div class="ui-card container-fluid">
+        <div v-if="resume.jobIntentionValue">
+          <div class="control">
+            <span>职业意向</span>
+            <i @click="goJobEditView" class="iconfont icon-bianji btn-control"></i>
+          </div>
+          <div class="container-fluid">
+            <div class="item" v-if="resume.jobIntentionValue.industryList">
+              <div class="ui-label ui-label-min">期望行业：</div>
+              <div>
+              <span>
+                <span v-for="(industry,index) in resume.jobIntentionValue.industryList">
+                  <b class="vertical-line" v-if="index>0">&nbsp;&nbsp;|&nbsp;&nbsp;</b>
+                  <span>{{industry.value}}</span>
+                </span>
+              </span>
+              </div>
+            </div>
+            <div class="item" v-if="resume.jobIntentionValue.positionList">
+              <div class="ui-label ui-label-min">意向职位：</div>
+              <div>
+               <span>
+                <span v-for="(position,index) in resume.jobIntentionValue.positionList">
+                  <b class="vertical-line" v-if="index>0">&nbsp;&nbsp;|&nbsp;&nbsp;</b>
+                  <span>{{position}}</span>
+                </span>
+              </span>
+              </div>
+            </div>
+            <div class="item" v-if="resume.jobIntentionValue.cityList">
+              <div class="ui-label ui-label-min">意向城市：</div>
+              <div>
+               <span>
+                <span v-for="(city,index) in resume.jobIntentionValue.cityList">
+                  <b class="vertical-line" v-if="index>0">&nbsp;&nbsp;|&nbsp;&nbsp;</b>
+                  <span>{{city.value}}</span>
+                </span>
+              </span>
+              </div>
+            </div>
+            <div class="item" v-if="resume.jobIntentionValue.jobTypeDivView">
+              <div class="ui-label">工作类型：</div>
+              <div>{{resume.jobIntentionValue.jobTypeDivView}}</div>
+            </div>
+          </div>
+        </div>
+        <div v-else class="job-add" @click="goJobEditView">
+          <i slot="right" style=" font-size: 25px;color: #D86471;" class="iconfont icon-jia7"></i>
+        </div>
+      </div>
+      <model-title id="eduBgdValue" title="教育情况" fontClass="icon-jiaoyu"></model-title>
+      <div class="ui-card container-fluid">
+        <div v-if="resume.eduBgdValue">
+          <div class="control" v-if="resume.eduBgdValue">
+            <span>教育背景</span>
+            <i @click="goEduAddView" class="iconfont icon-tianjia btn-control"></i>
+          </div>
+          <div class="container-fluid edu-box">
+            <i @click="goOfferEditView" class="iconfont icon-bianji btn-control btn-control-absolute"></i>
+            <div class="item" v-if="resume.eduBgdValue.hightestEduCodeView">
+              <div class="ui-label">最高学历：</div>
+              <div>{{resume.eduBgdValue.hightestEduCodeView}}</div>
+            </div>
+            <div style="display: inline-block;" class="item" v-if="resume.eduBgdValue.offerList">
+              <div class="ui-label offer-label">知名公司offer：</div>
+              <div class="offer-list" v-for="offer in resume.eduBgdValue.offerList">{{offer}}
+              </div>
+            </div>
+          </div>
+          <div class="container-fluid flex-box" v-for="(eduExpValue, index) in resume.eduBgdValue.eduExpValueList"
+               :key="index">
+            <div class="time-line">
+              <div class="line"></div>
+              <img src="../../assets/time_dot.png"/>
+            </div>
+            <div class="flex-box-content">
+              <i @click="goEduEditView(index)" class="iconfont icon-bianji btn-control btn-control-absolute"></i>
+              <div class="item item-column">
+                <div class="item-child item ">{{eduExpValue.startTime}}--{{eduExpValue.endTime}}</div>
+                <div class="item-child item">
+                  <div class="ui-label">学校：</div>
+                  <div>{{eduExpValue.schoolName}}&nbsp;&nbsp;<span class="lable-border"
+                                                                   v-if="eduExpValue.schoolReature">{{eduExpValue.schoolReature}}</span>
+                  </div>
+                </div>
+                <div class="item-child item">
+                  <div class="ui-label">专业：</div>
+                  <div>{{eduExpValue.major}}</div>
+                </div>
+                <div class="item-child item">
+                  <div class="ui-label">学历：</div>
+                  <div>{{eduExpValue.eduHistoryCodeView}}</div>
+                </div>
+                <div class="item-child item">
+                  <div class="ui-label">校内职务：</div>
+                  <div>{{eduExpValue.schoolJob}}</div>
+                </div>
+                <div class="item-child item">
+                  <div class="ui-label">校内荣誉：</div>
+                  <div>{{eduExpValue.honor}}</div>
+                </div>
+                <div class="item-child item item-column">
+                  <div class="ui-label">实习经历：</div>
+                  <div><p v-for="fieldExpItem in eduExpValue.fieldExp">{{fieldExpItem}}</p></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div v-else class="edu-add" @click="goEduAdd">
+          <i slot="right" style=" font-size: 25px;color: #D86471" class="iconfont icon-jia7"></i>
+        </div>
+      </div>
+      <model-title id="workStateValue"
+                   v-if="resume.workStateValue.workExpValueList||resume.workStateValue.projExpValueList" title="工作情况"
+                   fontClass="icon-gongzuojingli"></model-title>
+      <div v-if="resume.workStateValue.workExpValueList"
+           class="ui-card container-fluid">
+        <div id="workExpValueList" class="control" v-if="resume.workStateValue.workExpValueList">
+          <span>工作经历</span>
+          <i @click="goCareerAddView" class="iconfont icon-tianjia btn-control"></i>
+        </div>
+        <div>
+          <div class="container-fluid flex-box" v-for="(workExpValue, index) in resume.workStateValue.workExpValueList"
+               :key="index">
+            <div class="time-line">
+              <div class="line"></div>
+              <img src="../../assets/time_dot.png"/>
+            </div>
+            <div class="flex-box-content">
+              <i @click="goCareerEditView(index)" class="iconfont icon-bianji btn-control btn-control-absolute"></i>
+              <div class="item item-column">
+                <div class="item-child item ">
+                  {{workExpValue.startTime}}--{{workExpValue.endTime}}&nbsp;&nbsp;&nbsp;{{workExpValue.workLife}}
+                </div>
+                <div class="item-child item">
+                  <div class="ui-label">企业：&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+                  <div class="label-red">{{workExpValue.coName}}</div>
+                </div>
+                <div class="item-child item">
+                  <div>{{workExpValue.industryCodeView}}/{{workExpValue.coNatureView}}/{{workExpValue.lnassetView}}
+                  </div>
+                </div>
+                <div class="item-child item">
+                  <div class="ui-label">所属部门：</div>
+                  <div>{{workExpValue.department}}</div>
+                </div>
+                <div class="item-child item">
+                  <div class="ui-label">职务名称：</div>
+                  <div>{{workExpValue.positionName}}</div>
+                </div>
+                <div class="item-child item item-column">
+                  <div class="ui-label">工作内容：</div>
+                  <div><p v-for="jobContentItem in workExpValue.jobContent">{{jobContentItem}}</p></div>
+                </div>
+                <div class="item-child item item-column">
+                  <div class="ui-label">工作业绩：</div>
+                  <div><p v-for="jobAchvItem in workExpValue.jobAchv">{{jobAchvItem}}</p></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div v-if="resume.workStateValue.projExpValueList"
+           class="ui-card container-fluid">
+        <div id="projExpValueList" class="control" v-if="resume.workStateValue.projExpValueList">
+          <span>项目经验</span>
+          <i @click="goProjectAddView" class="iconfont icon-tianjia btn-control"></i>
+        </div>
+        <div>
+          <div class="container-fluid flex-box" v-for="(projExpValue, index) in resume.workStateValue.projExpValueList"
+               :key="index">
+            <div class="time-line">
+              <div class="line"></div>
+              <img src="../../assets/time_dot.png"/>
+            </div>
+            <div class="flex-box-content">
+              <i @click="goProjectEditView(index)" class="iconfont icon-bianji btn-control btn-control-absolute"></i>
+              <div class="item item-column">
+                <div class="item-child item ">
+                  {{projExpValue.startTime}}--{{projExpValue.endTime}}&nbsp;&nbsp;&nbsp;<span class="label-red">{{projExpValue.coName}}</span>
+                </div>
+                <div class="item-child item">
+                  <div class="ui-label">项目名称：</div>
+                  <div>{{projExpValue.projName}}</div>
+                </div>
+                <div class="item-child item">
+                  <div class="ui-label">项目职务：</div>
+                  <div>{{projExpValue.projPosition}}</div>
+                </div>
+                <div class="item-child item">
+                  <div class="ui-label">项目职责：</div>
+                  <div>{{projExpValue.projFunction}}</div>
+                </div>
+                <div class="item-child item item-column">
+                  <div class="ui-label">项目描述：</div>
+                  <div><p v-for="projDscItem in projExpValue.projDsc">{{projDscItem}}</p></div>
+                </div>
+                <div class="item-child item item-column">
+                  <div class="ui-label">项目业绩：</div>
+                  <div><p v-for="projPerformanceItem in projExpValue.projPerformance">{{projPerformanceItem}}</p></div>
+                </div>
+                <div class="item-child item">
+                  <div class="ui-label">项目链接：</div>
+                  <a :href="projExpValue.projLink">{{projExpValue.projLink}}</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <model-title id="skillsStateValue" v-if="resume.skillsStateValue" title="技能情况" fontClass="icon-jishunengli01"></model-title>
+      <div v-if="resume.skillsStateValue">
+        <div id="skillsSpclValueList" v-if="resume.skillsStateValue.skillsSpclValueList" class="ui-card container-fluid">
+          <div class="control" v-if="resume.skillsStateValue.skillsSpclValueList">
+            <span>技能特长</span>
+            <i @click="goSkillAddView" class="iconfont icon-tianjia btn-control"></i>
+          </div>
+          <div class="container-fluid">
+            <div class="item item-column skill-item"
+                 v-for="(skillsSpclValue, index) in resume.skillsStateValue.skillsSpclValueList" :key="index">
+              <i @click="goSkillEditView(index)" class="iconfont icon-bianji btn-control btn-control-absolute"></i>
+              <div class="item item-child">{{skillsSpclValue.skillsName}}</div>
+              <div class="progress">
+                <div class="progress-bar" v-if="'01'==skillsSpclValue.skillMastery" style="width: 25%;"><span
+                  class="progress-tag">{{skillsSpclValue.skillMasteryView}}</span></div>
+                <div class="progress-bar" v-if="'02'==skillsSpclValue.skillMastery" style="width: 50%;"><span
+                  class="progress-tag">{{skillsSpclValue.skillMasteryView}}</span></div>
+                <div class="progress-bar" v-if="'03'==skillsSpclValue.skillMastery" style="width: 75%;"><span
+                  class="progress-tag">{{skillsSpclValue.skillMasteryView}}</span></div>
+                <div class="progress-bar" v-if="'04'==skillsSpclValue.skillMastery" style="width: 100%;"><span
+                  class="progress-tag">{{skillsSpclValue.skillMasteryView}}</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="skillsSpclValueList" v-if="resume.skillsStateValue.skillsCertValueList" class="ui-card container-fluid">
+          <div id="skillsCertValueList" class="control" v-if="resume.skillsStateValue.skillsCertValueList">
+            <span>证书</span>
+            <i @click="goCertificateAddView" class="iconfont icon-tianjia btn-control"></i>
+          </div>
+          <div class="container-fluid">
+            <div class="flex-box" v-for="(skillsCertValue,index) in resume.skillsStateValue.skillsCertValueList"
+                 :key="index">
+              <div class="time-line time-line-last">
+                <div class="line"></div>
+                <img src="../../assets/time_dot.png"/>
+              </div>
+              <div class="flex-box-content">
+                <i @click="goCertificateEditView(index)"
+                   class="iconfont icon-bianji btn-control btn-control-absolute"></i>
+                <div class="certificate"><span class="time">{{skillsCertValue.getTime}}</span><span
+                  class="label-red">{{skillsCertValue.customName}}{{skillsCertValue.certName}}</span><span class="score">{{skillsCertValue.achievement}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="skillsSpclValueList" v-if="resume.skillsStateValue.skillsTrnValueList" class="ui-card container-fluid">
+          <div id="skillsTrnValueList" class="control" v-if="resume.skillsStateValue.skillsTrnValueList">
+            <span>培训经历</span>
+            <i @click="goTrainAddView" class="iconfont icon-tianjia btn-control"></i>
+          </div>
+          <div>
+            <div class="container-fluid flex-box"
+                 v-for="(skillsTrnValue, index) in resume.skillsStateValue.skillsTrnValueList" :key="index">
+              <div class="time-line">
+                <div class="line"></div>
+                <img src="../../assets/time_dot.png"/>
+              </div>
+              <div class="flex-box-content">
+                <i @click="goTrainEditView(index)" class="iconfont icon-bianji btn-control btn-control-absolute"></i>
+                <div class="item item-column">
+                  <div class="item item-child">
+                    {{skillsTrnValue.startTime}}--{{skillsTrnValue.endTime}}&nbsp;&nbsp;&nbsp;<span class="label-red">{{skillsTrnValue.trnCourse}}</span>
+                  </div>
+                  <div class="item item-child">{{skillsTrnValue.trnInst}}</div>
+                  <div class="item item-child item item-column">
+                    <div class="ui-label">培训描述：</div>
+                    <div><p v-for="trnDscItem in skillsTrnValue.trnDsc">{{trnDscItem}}</p></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <model-title id="affixInfoValue" v-if="resume.affixInfoValue" title="附加信息" fontClass="icon-fujian"></model-title>
+      <div v-if="resume.affixInfoValue" class="ui-card container-fluid">
+        <div class="control">
+          <span>附件</span>
+          <i @click="goAnnexAddView" class="iconfont icon-tianjia btn-control"></i>
+        </div>
+        <div class="container-fluid">
+          <div class="additional" v-for="(attachmentValue, index) in resume.affixInfoValue.attachmentValueList"
+               :key="index">
+            <i @click="goAnnexEditView(index)" class="iconfont icon-bianji btn-control btn-control-absolute"></i>
+            <div class="item">
+              <span class="ui-label">附件名称：</span>
+              <a v-if="'01'==attachmentValue.uploadDiv" :href="attachmentValue.uploadAddr">{{attachmentValue.attachmentName}}</a>
+              <span v-if="'02'==attachmentValue.uploadDiv">{{attachmentValue.attachmentName}}</span>
+            </div>
+            <div class="item" v-if="'02'==attachmentValue.uploadDiv">
+              <span class="ui-label">作品链接：</span>
+              <a :href="attachmentValue.uploadAddr">{{attachmentValue.uploadAddr}}</a>
+            </div>
+            <div class="item item-column">
+              <div class="ui-label">附件描述：</div>
+              <div><p v-for="attachmentDscItem in attachmentValue.attachmentDsc">{{attachmentDscItem}}</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div v-if="resume.affixInfoValue" class="ui-card container-fluid">
+        <div class="control">
+          <span>其他</span>
+          <i @click="goOtherAddView" class="iconfont icon-tianjia btn-control"></i>
+        </div>
+        <div class="container-fluid">
+          <div class="additional" v-for="(otherValue, index) in resume.affixInfoValue.otherValueList" :key="index">
+            <i @click="goOtherEditView(index)" class="iconfont icon-bianji btn-control btn-control-absolute"></i>
+            <div class="item" v-if="otherValue.customName">
+              <div class="ui-label">自定义：</div>
+              <div>{{otherValue.customName}}</div>
+            </div>
+            <div class="item" v-else>
+              <div class="ui-label">主题：</div>
+              <div>{{otherValue.themeName}}</div>
+            </div>
+            <div class="item item-column">
+              <div class="ui-label">主体内容：</div>
+              <div><p v-for="themeDscItem in otherValue.themeDsc">{{themeDscItem}}</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <loading v-else :show="true"></loading>
+    <div v-transfer-dom v-if="isLoading">
+      <popup v-model="isShowPopup" style="top: 45px;" position="top">
+        <div class="work-state-popup">
+          <popup-item :selectDiv="resume.basicInfoValue.workState" divType="01" @click.native="save('01')">离职，随时到岗
+          </popup-item>
+          <popup-item :selectDiv="resume.basicInfoValue.workState" divType="02" @click.native="save('02')">在职，考虑机会
+          </popup-item>
+          <popup-item :selectDiv="resume.basicInfoValue.workState" divType="03" @click.native="save('03')">在职，不考虑机会
+          </popup-item>
+          <popup-item :selectDiv="resume.basicInfoValue.workState" divType="04" @click.native="save('04')">我是应届生
+          </popup-item>
+          <popup-item :selectDiv="resume.basicInfoValue.workState" divType="05" @click.native="save('05')">在读，寻找实习
+          </popup-item>
+          <popup-item :selectDiv="resume.basicInfoValue.workState" divType="06" @click.native="save('06')">在读，在实习中
+          </popup-item>
+          <popup-item :selectDiv="resume.basicInfoValue.workState" divType="07" @click.native="save('07')">创业找合伙人
+          </popup-item>
+        </div>
+      </popup>
+    </div>
+    <actionsheet v-model="otherDialogShow" :menus="otherDialogMenu" theme="android" @on-click-menu="clickDialogMenu">
+    </actionsheet>
+  </div>
+
+</template>
+
+<script scoped>
+  import ModelTitle from '../../components/ModelTitle'
+  import ResumeMenu from '../../components/ResumeMenu'
+  import PopupItem from '../../components/PopupItem'
+  import { TransferDom, Popup, Group, Loading, XHeader, Actionsheet } from 'vux'
+  import { mapState } from 'vuex'
+
+  export default {
+    name: 'resume-view',
+    directives: {
+      TransferDom
+    },
+    components: {ModelTitle, PopupItem, Loading, ResumeMenu, Popup, Group, XHeader, Actionsheet},
+    computed: mapState({
+      resume: state => state.resume.resume
+    }),
+    data () {
+      return {
+        isLoading: false,
+        isShowMenu: false,
+        isShowPopup: false,
+        menuSelect: String,
+        // 技能培训ID
+        skillsTrnValueList: '',
+        skillsTrnValueListForm: {
+          skillsTrnId: ''
+        },
+        // 其它ID
+        otherValueList: '',
+        otherValueListForm: {
+          otherId: ''
+        },
+        // 证书ID
+        skillsCertValueList: '',
+        skillsCertValueListForm: {
+          skillsCertId: ''
+        },
+        // 技能特长ID
+        skillsSpclValueList: '',
+        skillsSpclValueListForm: {
+          skillsSpclId: ''
+        },
+        // 工作经历
+        workExpValueList: '',
+        workExpValueListForm: {
+          workExpId: ''
+        },
+        // 项目经验
+        projExpValueList: '',
+        projExpValueListForm: {
+          projExpId: ''
+        },
+        // 附件
+        attachmentValueList: '',
+        attachmentValueListForm: {
+          attachmentId: ''
+        },
+        // 教育经历
+        eduExpValueList: '',
+        eduExpValueListForm: {
+          eduExpId: ''
+        },
+        otherDialogMenu: {
+          menu1: '附件添加',
+          menu2: '其他添加'
+        },
+        otherDialogShow: false
+      }
+    },
+    created: function () {
+      this.initResume()
+    },
+    methods: {
+      initResume: function () {
+        this.$store.dispatch('getResume').then(res => {
+          console.log(res.data.data)
+          if (res.data.code === '200') {
+            this.isLoading = true
+            if (res.data.data.skillsStateValue) {
+              this.skillsTrnValueList = res.data.data.skillsStateValue.skillsTrnValueList
+              this.skillsCertValueList = res.data.data.skillsStateValue.skillsCertValueList
+              this.skillsSpclValueList = res.data.data.skillsStateValue.skillsSpclValueList
+            }
+            if (res.data.data.affixInfoValue) {
+              this.otherValueList = res.data.data.affixInfoValue.otherValueList
+              this.attachmentValueList = res.data.data.affixInfoValue.attachmentValueList
+            }
+            if (res.data.data.workStateValue) {
+              this.workExpValueList = res.data.data.workStateValue.workExpValueList
+              this.projExpValueList = res.data.data.workStateValue.projExpValueList
+            }
+            if (res.data.data.eduBgdValue) {
+              this.eduExpValueList = res.data.data.eduBgdValue.eduExpValueList
+            }
+          } else {
+          }
+        })
+      },
+      showMenu: function () {
+        this.isShowMenu = !this.isShowMenu
+      },
+      onSelectType (type) {
+        this.menuSelect = type
+        // 用 class="d_jump" 添加锚点
+        let jump = document.querySelector(type)
+        let total = jump.offsetTop
+        let obj = jump.offsetParent
+
+        while (obj.id !== 'root') {
+          total = total + obj.offsetTop
+          obj = obj.offsetParent
+          console.log(total)
+        }
+        total = total - 45
+        let distance = document.documentElement.scrollTop || document.body.scrollTop
+        // 平滑滚动，时长500ms，每10ms一跳，共50跳
+        let step = total / 50
+        if (total > distance) {
+          smoothDown()
+        } else {
+          let newTotal = distance - total
+          step = newTotal / 50
+          smoothUp()
+        }
+
+        function smoothDown () {
+          if (distance < total) {
+            distance += step
+            document.body.scrollTop = distance
+            document.documentElement.scrollTop = distance
+            setTimeout(smoothDown, 5)
+          } else {
+            document.body.scrollTop = total
+            document.documentElement.scrollTop = total
+          }
+        }
+
+        function smoothUp () {
+          if (distance > total) {
+            distance -= step
+            document.body.scrollTop = distance
+            document.documentElement.scrollTop = distance
+            setTimeout(smoothUp, 5)
+          } else {
+            document.body.scrollTop = total
+            document.documentElement.scrollTop = total
+          }
+        }
+      },
+      showPopup: function () {
+        this.isShowPopup = !this.isShowPopup
+      },
+      //  跳转基本资料编辑
+      goUserInfoEditView: function () {
+        this.$router.push({path: '/edit/info'})
+      },
+      //  跳转职位意向编辑
+      goJobEditView: function () {
+        this.$router.push({path: '/edit/job'})
+      },
+      //  跳转工作经历添加
+      goCareerAddView: function () {
+        this.$router.push({path: '/edit/career'})
+      },
+      //  跳转工作经历编辑
+      goCareerEditView: function (index) {
+        this.workExpValueListForm.workExpId = this.workExpValueList[index].workExpId
+        this.$router.push({path: '/edit/career', query: {workExpId: this.workExpValueListForm.workExpId, index: index}})
+      },
+      //  跳转项目经验添加
+      goProjectAddView: function () {
+        this.$router.push({path: '/edit/project'})
+      },
+      //  跳转项目经验编辑
+      goProjectEditView: function (index) {
+        this.projExpValueListForm.projExpId = this.projExpValueList[index].projExpId
+        this.$router.push({
+          path: '/edit/project',
+          query: {projExpId: this.projExpValueListForm.projExpId, index: index}
+        })
+      },
+      //  跳转技能特长添加
+      goSkillAddView: function () {
+        this.$router.push({path: '/edit/skill'})
+      },
+      //  跳转技能特长编辑
+      goSkillEditView: function (index) {
+        this.skillsSpclValueListForm.skillsSpclId = this.skillsSpclValueList[index].skillsSpclId
+        this.$router.push({
+          path: '/edit/skill',
+          query: {skillsSpclId: this.skillsSpclValueListForm.skillsSpclId, index: index}
+        })
+      },
+      //  跳转证书添加
+      goCertificateAddView: function () {
+        this.$router.push({path: '/edit/certificate'})
+      },
+      //  跳转证书编辑
+      goCertificateEditView: function (index) {
+        this.skillsCertValueListForm.skillsCertId = this.skillsCertValueList[index].skillsCertId
+        this.$router.push({
+          path: '/edit/certificate',
+          query: {skillsCertId: this.skillsCertValueListForm.skillsCertId, index: index}
+        })
+      },
+      //  跳转培训经历添加
+      goTrainAddView: function () {
+        this.$router.push({path: '/edit/train'})
+      },
+      //  跳转培训经历编辑
+      goTrainEditView: function (index) {
+        this.skillsTrnValueListForm.skillsTrnId = this.skillsTrnValueList[index].skillsTrnId
+        this.$router.push({
+          path: '/edit/train',
+          query: {skillsTrnId: this.skillsTrnValueListForm.skillsTrnId, index: index}
+        })
+      },
+      //  跳转附件添加
+      goAnnexAddView: function () {
+        this.$router.push({path: '/edit/annex'})
+      },
+      //  跳转附件编辑
+      goAnnexEditView: function (index) {
+        this.attachmentValueListForm.attachmentId = this.attachmentValueList[index].attachmentId
+        this.$router.push({
+          path: '/edit/annex',
+          query: {attachmentId: this.attachmentValueListForm.attachmentId, index: index}
+        })
+      },
+      //  跳转其他添加
+      goOtherAddView: function () {
+        this.$router.push({path: '/edit/other'})
+      },
+      //  跳转其他编辑
+      goOtherEditView: function (index) {
+        this.otherValueListForm.otherId = this.otherValueList[index].otherId
+        this.$router.push({path: '/edit/other', query: {otherId: this.otherValueListForm.otherId, index: index}})
+      },
+      //  跳转offfer编辑
+      goOfferEditView: function () {
+        this.$router.push({path: '/edit/offer'})
+      },
+      //  跳转教育经历添加
+      goEduAddView: function () {
+        this.$router.push({path: '/edit/edu'})
+      },
+      //  跳转教育经历编辑
+      goEduEditView: function (index) {
+        this.eduExpValueListForm.eduExpId = this.eduExpValueList[index].eduExpId
+        this.$router.push({path: '/edit/edu', query: {eduExpId: this.eduExpValueListForm.eduExpId, index: index}})
+      },
+      //  跳转教育添加
+      goEduAdd: function () {
+        this.$router.push({path: '/add/edu'})
+      },
+      affixClick: function () {
+        this.otherDialogShow = true
+      },
+      clickDialogMenu: function (menu) {
+        switch (menu) {
+          case 'menu1':
+            this.goAnnexAddView()
+            break
+          case 'menu2':
+            this.goOtherAddView()
+            break
+        }
+        console.log(menu)
+      },
+      save (index) {
+        this.workState = index
+        this.isShowPopup = false
+        this.$store.dispatch('editWorkState', index).then(res => {
+          console.log(res)
+          if (res.data.code === '200') {
+            this.$vux.toast.text('状态改变成功')
+            this.resume.basicInfoValue.workState = this.workState
+            this.initResume()
+          } else {
+            this.$vux.toast.text(res.data.message)
+          }
+        })
+      }
+    }
+  }
+</script>
+
+<style scoped>
+  .resume-view {
+    background-color: #F1F1F1;
+  }
+
+  .header {
+    background-color: #D86471;
+    top: 0;
+    border-width: 0 0 1px;
+    position: fixed;
+    right: 0;
+    left: 0;
+    z-index: 1030;
+  }
+
+  .title {
+    color: #FFF;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .title .icon-xiala {
+    font-size: 10px;
+  }
+
+  .work-state-popup {
+    background-color: white;
+    border-bottom: 1px solid #D86471;
+  }
+
+  .content {
+    background-color: #F1F1F1;
+    width: 100%;
+    padding-top: 45px;
+    padding-bottom: 20px;
+  }
+
+  .ui-card {
+    position: relative;
+    margin-bottom: 10px;
+    padding: 15px;
+    background-color: white;
+    border-radius: 3px;
+    box-shadow: 2px 2px 2px #E8E9EB;
+  }
+
+  .container-fluid {
+    padding-right: 15px;
+    padding-left: 15px;
+  }
+
+  .control {
+    height: 25px;
+    line-height: 25px;
+    text-align: right;
+    margin-bottom: 20px;
+  }
+
+  .control span {
+    float: left;
+    line-height: 25px;
+    font-size: 16px;
+    padding-left: 15px;
+    border-left: 7px solid #d86372;
+  }
+
+  .btn-control {
+    font-size: 20px;
+    line-height: 20px;
+    color: #878787;
+  }
+
+  .btn-control-absolute {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin-top: -3px;
+    margin-right: -15px;
+  }
+
+  .head-img {
+    text-align: center;
+  }
+
+  .head-img img {
+    border-radius: 45px;
+    border: 1px solid #ddd;
+    width: 90px;
+    height: 90px;
+  }
+
+  .username {
+    margin-top: 8px;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .username > span {
+    font-weight: bold;
+    font-size: 16px;
+  }
+
+  .base-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .base-info-list {
+    padding-right: 0;
+    padding-left: 0;
+  }
+
+  .base-info-list .item i {
+    font-size: 15px;
+    line-height: 20px;
+    margin-right: 5px;
+  }
+
+  .base-info div {
+    margin: 5px 10px;
+  }
+
+  .item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    margin-bottom: 8px;
+  }
+
+  .item-center {
+    align-items: center;
+  }
+
+  .item-column {
+    flex-direction: column;
+    align-items: flex-start;
+    position: relative;
+  }
+
+  .skill-item i {
+    font-size: 20px !important;
+    margin-right: 0px !important;
+    right: -15px;
+  }
+
+  .item-column > .ui-label {
+    margin-bottom: 6px;
+  }
+
+  .item-child:not(:first-child):last-child {
+    margin-bottom: 0;
+  }
+
+  .item .ui-label, .item-child .ui-label {
+    margin-right: 10px;
+  }
+
+  .ui-label {
+    color: #878787;
+  }
+
+  .ui-label-min {
+    min-width: 65px;
+  }
+
+  .item i {
+    font-size: 25px;
+    margin-right: 10px;
+  }
+
+  .flex-box {
+    display: flex;
+  }
+
+  .flex-box .time-line {
+    width: 20px;
+    position: relative;
+  }
+
+  .flex-box .time-line .line {
+    position: absolute;
+    left: 0;
+    top: -6px;
+    bottom: 6px;
+    width: 0;
+    height: 100%;
+    border-left: 1px solid #454545 !important;
+  }
+
+  .flex-box .time-line img {
+    position: absolute;
+    top: 2px;
+    left: 0;
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+    margin-left: -7px;
+  }
+
+  .flex-box .flex-box-content {
+    position: relative;
+    flex: 1;
+  }
+
+  .progress {
+    width: 80%;
+    border-radius: 10px;
+    background: #CCC;
+    border-radius: 10px;
+    display: inline-block;
+    margin: 0 20px 0 3px;
+    height: 10px;
+    position: relative;
+  }
+
+  .progress-bar {
+    background: #D86471;
+    border-radius: 10px;
+    text-align: right;
+    height: 10px;
+  }
+
+  .progress-tag {
+    font-size: 12px;
+    line-height: 20px;
+    color: #666;
+    position: absolute;
+    top: -5px;
+    right: -35px;
+  }
+
+  .certificate {
+    width: 100%;
+    margin-bottom: 15px;
+  }
+
+  .certificate .time {
+    margin-right: 20px;
+  }
+
+  .label-red {
+    color: #D86471;
+  }
+
+  .certificate .score {
+    float: right;
+    margin-right: 20px;
+  }
+
+  .additional {
+    position: relative;
+    margin-bottom: 30px;
+  }
+
+  .edu-box {
+    position: relative;
+    margin-top: 15px;
+  }
+
+  .edu-box .btn-control-absolute {
+    margin: 0
+  }
+
+  .job-add, .edu-add {
+    text-align: center;
+    border-radius: 10px;
+    border: 1px dotted #D86471;
+    margin-top: 15px;
+  }
+
+  .lable-border {
+    font-size: 10px;
+    border: 1px solid #D86471;
+    padding: 2px;
+    border-radius: 5px;
+    color: #D86471;
+  }
+
+  .ui-card-info {
+    padding: 0;
+  }
+
+  .bg-img {
+    height: 70px;
+    background: #d86372;
+    position: absolute;
+    width: 100%;
+  }
+
+  .header-info {
+    padding: 25px 15px 15px;
+    position: relative;
+    margin-bottom: 0px;
+  }
+
+  .head-img i {
+    position: absolute;
+    top: 75px;
+    right: 15px;
+  }
+  .offer-label{
+    margin: 12px 10px 0 0;
+    float: left;
+  }
+  .offer-list{
+    border: 1px solid #CCC;
+    border-radius: 3px;
+    padding: 0 3px;
+    margin: 10px 10px 0 0;
+    float: left;
+  }
+</style>
+<style>
+  .header.vux-header .vux-header-left .left-arrow:before {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #fff;
+    border-width: 1px 0 0 1px;
+    -webkit-transform: rotate(315deg);
+    transform: rotate(315deg);
+    top: 8px;
+    left: 7px;
+  }
+</style>

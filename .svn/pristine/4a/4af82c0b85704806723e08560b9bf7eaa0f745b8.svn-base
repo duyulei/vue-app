@@ -1,0 +1,261 @@
+<template>
+  <div class="career-edit">
+    <x-header class="header" :left-options="{backText: ''}">工作经历</x-header>
+    <div class="career-time">
+      <group class="group-time">
+        <datetime class="date-left user-defined" :min-year='1900' format="YYYY-MM" title="起始时间" v-model="form.startTime" placeholder="-请选择-"></datetime>
+      </group>
+      <group class="group-time">
+        <datetime class="date-right" :min-year='1900' format="YYYY-MM" title="至" v-model="form.endTime" placeholder="-请选择-"></datetime>
+      </group>
+    </div>
+    <group class="basic-info">
+        <x-input class="user-defined" title="公司名称" v-model="form.coName" placeholder="请填写公司名称"></x-input>
+        <popup-radio class="user-defined" title="公司性质" :options="coNatures" v-model="form.coNature" placeholder="请选公司性质"></popup-radio>
+        <popup-radio class="user-defined" title="公司规模" :options="lnassets" v-model="form.lnasset" placeholder="请选择公司规模"></popup-radio>
+        <popup-picker title="公司行业" :data="list" :columns="2" v-model="industryCodes" @on-change="onChange" show-name placeholder="请选择公司行业"></popup-picker>
+        <popup-radio class="user-defined" title="工作类型" :options="jobTypes" v-model="form.jobTypeDiv" placeholder="请选择工作类型"></popup-radio>
+        <x-input title="所属部门" v-model="form.department" placeholder="请填写所属部门"></x-input>
+        <x-input class="user-defined" title="职务名称" v-model="form.positionName" placeholder="请填写职务名称"></x-input>
+        <cell title="工作内容"></cell>
+        <x-textarea placeholder="请填写你的工作内容" v-model="form.jobContent"></x-textarea>
+        <cell title="工作业绩"></cell>
+        <x-textarea placeholder="请填写你的工作业绩" v-model="form.jobAchv"></x-textarea>
+        <div class="delete-box" v-if="form.workExpId">
+          <x-button class="delete-btn" type="default" style="border-radius:99px;" @click.native="deleteShow = true">删除本条</x-button>
+        </div>
+        <x-button class="basic-btn" type="warn" @click.native="save">保存</x-button>
+    </group>
+    <confirm v-model="deleteShow"
+      title="删除"
+      :close-on-confirm="false"
+      @on-confirm="onConfirm">
+        <p style="text-align:center;">删除工作经历将无法恢复，你确认删除？</p>
+    </confirm>
+  </div>
+</template>
+
+<script>
+  import { Group, XInput, XTextarea, Cell, XButton, Datetime, PopupRadio, PopupPicker, Confirm, XHeader } from 'vux'
+
+  export default {
+    name: 'career-edit',
+    components: { Group, XInput, XTextarea, Cell, XButton, Datetime, PopupRadio, PopupPicker, Confirm, XHeader },
+    data() {
+      return {
+        index: '',
+        deleteShow: false,
+        coNatures: [{key: '01', value: '国企'}, {key: '02', value: '合资'}, {key: '03', value: '民营企业'}, {key: '04', value: '创业公司'}, {key: '05', value: '上市公司'}, {key: '06', value: '事业单位'}, {key: '07', value: '政府机关'}, {key: '08', value: '非盈利机构'}, {key: '09', value: '外企代表处一般'}, {key: '10', value: '外资(欧美)'}, {key: '11', value: '外资(非欧美)'}],
+        lnassets: [{key: '01', value: '50人以下'}, {key: '02', value: '50~100人'}, {key: '03', value: '100~500人'}, {key: '04', value: '500~1000人'}, {key: '05', value: '1000人以上'}],
+        jobTypes: [{key: '01', value: '全职'}, {key: '02', value: '兼职'}, {key: '03', value: '实习'}],
+        form: {
+          // 工作经历ID
+          workExpId: '',
+          coName: '',
+          coNature: '',
+          department: '',
+          endTime: '',
+          industryCode: '',
+          jobAchv: '',
+          jobContent: '',
+          lnasset: '',
+          positionName: '',
+          startTime: '',
+          jobTypeDiv: '01'
+        },
+        industryCodes: [],
+        industryResourceList: '',
+        list: []
+      }
+    },
+    created() {
+      if (this.$route.query.workExpId){
+        this.form.workExpId = this.$route.query.workExpId
+        this.index = this.$route.query.index
+        console.log(this.$store.state.resume.resume.workStateValue.workExpValueList)
+        this.form.coName = this.$store.state.resume.resume.workStateValue.workExpValueList[this.index].coName
+        this.form.coNature = this.$store.state.resume.resume.workStateValue.workExpValueList[this.index].coNature
+        this.form.department = this.$store.state.resume.resume.workStateValue.workExpValueList[this.index].department
+        this.form.endTime = this.$store.state.resume.resume.workStateValue.workExpValueList[this.index].endTime
+        this.form.jobAchv = this.$store.state.resume.resume.workStateValue.workExpValueList[this.index].jobAchvEdit
+        this.form.jobContent = this.$store.state.resume.resume.workStateValue.workExpValueList[this.index].jobContentEdit
+        this.form.lnasset = this.$store.state.resume.resume.workStateValue.workExpValueList[this.index].lnasset
+        this.form.positionName = this.$store.state.resume.resume.workStateValue.workExpValueList[this.index].positionName
+        this.form.startTime = this.$store.state.resume.resume.workStateValue.workExpValueList[this.index].startTime
+        this.industryCodes = this.$store.state.resume.resume.workStateValue.workExpValueList[this.index].industryCodes
+        if (this.industryCodes[1]){
+          this.form.industryCode = this.industryCodes[1]
+        } else {
+          this.form.industryCode = ''
+        }
+      }
+      this.$store.dispatch('getResource').then(res => {
+        if (res.data.code === '200') {
+          this.industryResourceList = res.data.data.industryResourceList
+          var arr = []
+          for (var i = 0; i < this.industryResourceList.length; i++) {
+            var objParent = {}
+            objParent.name = this.industryResourceList[i].resourceName
+            objParent.value = this.industryResourceList[i].resourceCode
+            objParent.parent = 0
+            arr.push(objParent)
+            if (this.industryResourceList[i].children) {
+              for (var j = 0; j < this.industryResourceList[i].children.length; j++) {
+                var obj = {}
+                obj.name = this.industryResourceList[i].children[j].resourceName
+                obj.value = this.industryResourceList[i].children[j].resourceCode
+                obj.parent = this.industryResourceList[i].resourceCode
+                arr.push(obj)
+              }
+            }
+          }
+          this.list = arr
+        } else {
+          this.$vux.toast.text(res.data.message)
+        }
+      })
+    },
+    methods: {
+      save: function () {
+        if (!this.form.startTime) {
+          this.$vux.toast.text('请选择开始时间')
+          return
+        }
+        if (!this.form.endTime) {
+          this.$vux.toast.text('请选择结束时间')
+          return
+        }
+        if (!this.form.coName) {
+          this.$vux.toast.text('请填写公司名称')
+          return
+        }
+        if (!this.form.coNature) {
+          this.$vux.toast.text('请选择公司性质')
+          return
+        }
+        if (!this.form.lnasset) {
+          this.$vux.toast.text('请选择公司规模')
+          return
+        }
+        if (!this.form.positionName) {
+          this.$vux.toast.text('请填写职务名称')
+          return
+        }
+        this.$store.dispatch('editCareer', this.form).then(res => {
+          console.log(res)
+          if (res.data.code === '200') {
+            this.isLoading = true
+            this.$router.go(-1)
+          } else {
+            this.$vux.toast.text(res.data.message)
+          }
+        })
+      },
+      onConfirm () {
+        this.$store.dispatch('deleteCareer', this.form).then(res => {
+          console.log(res)
+          if (res.data.code === '200') {
+            this.isLoading = true
+            this.$router.go(-1)
+          } else {
+            this.$vux.toast.text(res.data.message)
+          }
+        })
+      },
+      onChange () {
+        this.form.industryCode = this.industryCodes[1]
+      }
+    }
+  }
+</script>
+
+<style scoped>
+.career-edit{
+    padding-top: 45px;
+    background: #f1f1f1;
+}
+.career-time{
+  display: flex;
+  position: absolute;
+  width: 100%;
+}
+.basic-info{
+    padding: 42px 0 120px;
+}
+.vux-datetime {
+    padding-right: 0;
+    padding-left: 0;
+}
+.date-left{
+  padding-left: 15px;;
+}
+.date-right{
+  padding-right: 15px;;
+}
+.basic-btn{
+    position: fixed;
+    bottom: 0;
+    border-radius: 0;
+}
+.group-time{
+  flex: 1;
+}
+.weui-btn_warn{
+  background: #D86471;
+}
+.delete-box{
+  width: 100%;
+  position: fixed;
+  bottom: 60px;
+  border-radius: 0;
+}
+.delete-btn{
+  width: 80%;
+  border: 1px solid #D86471;
+  color: #D86471;
+}
+.header{
+  background: #d86372;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+}
+</style>
+<style>
+.career-edit .weui-textarea{
+  background: #f1f1f1;
+  padding:10px;
+  min-height:200px;
+}
+
+.career-edit .weui-input{
+  text-align: right;
+}
+.career-edit .vux-datetime-value .vux-cell-value {
+    font-size: 12px !important;
+}
+.vux-x-textarea:before{
+  border: none !important;
+}
+.date-left.weui-cell_access .weui-cell__ft:after{
+  display: none !important;
+}
+.date-right.weui-cell_access .weui-cell__ft:after{
+  display: none !important;
+}
+  .header.vux-header .vux-header-left .left-arrow:before {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #fff;
+    border-width: 1px 0 0 1px;
+    -webkit-transform: rotate(315deg);
+    transform: rotate(315deg);
+    top: 8px;
+    left: 7px;
+  }
+</style>
+

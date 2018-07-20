@@ -1,0 +1,89 @@
+<template>
+  <div class="notice">
+    <x-header class="header" :left-options="{backText: ''}">服务提醒</x-header>
+    <div class="header-cell">
+      <div class="header-info">
+        <p><span class="position-title">系统消息</span></p>
+        <p class="position-time">10分钟前</p>
+        <p class="position-company">有3家企业查看了你的简历</span></p>
+      </div>
+      <p class="check">立即查看</p>
+    </div>
+    <div class="header-cell">
+      <div class="header-info">
+        <p><span class="position-title">系统消息</span></p>
+        <p class="position-time">1小时前</p>
+        <p class="position-company">只有玛丽莲是常青的时尚偶像</span></p>
+      </div>
+      <p class="check">立即查看</p>
+    </div>
+  </div>
+</template>
+
+<script>
+  import { XHeader, CellBox } from 'vux'
+
+  export default {
+    name: 'setting',
+    components: { XHeader, CellBox },
+    data() {
+      return {
+      }
+    },
+    created() {
+    },
+    methods: {
+    }
+  }
+</script>
+
+<style scoped>
+.notice{
+  background: #fff;
+  padding: 45px 0;
+}
+.header{
+  background: #d86372;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+  .header-cell{
+    border-bottom: 1px solid #d9d9d9;
+  }
+.header-info {
+    padding: 10px 15px;
+}
+.position-title{
+  font-size: 12px;
+  display: inline-block;
+}
+.position-time{
+  color: #ccc;
+  font-size: 12px;
+}
+.position-company{
+  font-size: 15px;
+  color: #000;
+}
+.check{
+  text-align: center;
+  background: #f1f1f1;
+  padding: 7px;
+}
+</style>
+<style>
+  .header.vux-header .vux-header-left .left-arrow:before {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #fff;
+    border-width: 1px 0 0 1px;
+    -webkit-transform: rotate(315deg);
+    transform: rotate(315deg);
+    top: 8px;
+    left: 7px;
+  }
+</style>

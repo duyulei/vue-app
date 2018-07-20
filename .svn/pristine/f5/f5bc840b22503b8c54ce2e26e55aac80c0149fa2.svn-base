@@ -1,0 +1,67 @@
+<template>
+  <div class="search-job">
+    <x-header  class="header" :left-options="{showBack: false}">
+      <div slot="left" class="header-left" @click="selectCity()"><span>城市</span><img width="25px" src="../../assets/down.png"/></div>
+      <input class="header-input" type="text"  placeholder="请输入职位名称" v-focus/>
+      <a slot="right" @click="goBack()">取消</a>
+    </x-header>
+  </div>
+</template>
+
+<script>
+  import {XHeader} from 'vux'
+  export default {
+    name: 'search-job',
+    components: {XHeader},
+    data () {
+      return {}
+    },
+    created () {
+    },
+    methods: {
+      goBack: function () {
+        this.$router.go(-1)
+      },
+      selectCity: function () {
+        this.$router.push({path: '/recruit/morejob/search/city'})
+      }
+    }
+  }
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+ .search-job {
+    height: 100%;
+    background: #f1f1f1;
+    padding-top: 45px;
+ }
+.header{
+  background: #d86372;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+}
+.header-input{
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 20px;
+  text-align: center;
+  background: #FFF;
+}
+.header-left{
+  color: #FFF;
+}
+.header-left img{
+  float: right;
+}
+</style>
+
+<style>
+  .vux-header .vux-header-right a {
+    color: #FFF !important;
+  }
+</style>

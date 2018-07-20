@@ -1,0 +1,100 @@
+<template>
+  <div class="set-password-view">
+    <div>
+      <group class="input-group">
+        <x-input title="手机号" type="tel" disabled v-model="form.phone"></x-input>
+        <x-input type="password" v-model.trim="form.newPassword" :min="6" placeholder="设置新密码"></x-input>
+        <x-input type="password" v-model.trim="form.rePassword" :min="6" placeholder="确认新密码"></x-input>
+      </group>
+    </div>
+    <x-button class="primary-red" type="primary" style="margin-top: 20px;" @click.native="reset">重置</x-button>
+  </div>
+</template>
+
+<script>
+  import { Flexbox, XInput, Group, XButton } from 'vux'
+  import commonMixin from '@/mixins/common'
+
+  export default {
+    name: 'set-password-view',
+    components: {
+      Flexbox,
+      XInput,
+      Group,
+      XButton
+    },
+    mixins: [commonMixin],
+    data () {
+      return {
+        form: {
+          phone: '',
+          imageCaptcha: '',
+          phoneCaptcha: '',
+          newPassword: '',
+          rePassword: ''
+        }
+      }
+    },
+    created () {
+      this.form.phone = this.$store.state.user.retrieve.phone
+      this.form.imageCaptcha = this.$store.state.user.retrieve.imageCaptcha
+      this.form.phoneCaptcha = this.$store.state.user.retrieve.phoneCaptcha
+      if (!this.form.phone || !this.form.imageCaptcha || !this.form.phoneCaptcha) {
+        this.$router.go(-1)
+      }
+      console.log(this.form)
+    },
+    methods: {
+      reset: function () {
+        this.$store.dispatch('resetUserPassword', this.form).then(res => {
+          console.log(res)
+          if (res.data.code === '200') {
+            this.goNeedBackView('/login')
+          } else {
+          }
+          this.$vux.toast.text(res.data.message)
+        })
+      }
+    }
+  }
+</script>
+
+<style scoped>
+  .set-password-view {
+    padding: 15px 50px;
+  }
+
+  .input-group .weui-cells:before {
+    border-top: 0;
+  }
+
+  .input-group .weui-cells:after {
+    border-bottom: 0;
+  }
+
+  .input-group .weui-cell:before {
+    height: 1px;
+    border-top: 1px;
+  }
+
+  .input-group .weui-cell:after {
+    content: " ";
+    position: absolute;
+    left: 15px;
+    bottom: 0;
+    right: 0;
+    height: 1px;
+    border-bottom: 1px solid #f1f1f1;
+    color: #f1f1f1;
+    transform-origin: 0 100%;
+    transform: scaleY(0.5);
+  }
+
+  .weui-vcode-img {
+    width: 80px;
+  }
+
+  .primary-red {
+    background-color: #D86471 !important;
+  }
+</style>

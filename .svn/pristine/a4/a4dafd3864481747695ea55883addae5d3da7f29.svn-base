@@ -1,0 +1,112 @@
+<template>
+  <div class="privacy">
+    <x-header class="header" :left-options="{backText: ''}">不让以下公司看我</x-header>
+    <group title="添加公司">
+      <cell title="通过公司名称添加" is-link :link="{path:'/user/privacy/shield/add'}"></cell>
+    </group>
+    <group v-if="shieldCompanyValues" title="已设置不让以下公司看到我">
+      <cell :title="shieldCompanyValue.companyName" style="color:#d86372;" v-for="(shieldCompanyValue, index) in shieldCompanyValues" :key="index">
+        <img slot="default" @click="cancleShield(index)" width="20px" src="../../assets/delete.png"/>
+      </cell>
+    </group>
+  </div>
+</template>
+
+<script>
+  import { XHeader, Group, Cell } from 'vux'
+  import { Indicator } from 'mint-ui'
+
+  export default {
+    name: 'privacy',
+    components: { XHeader, Group, Cell, Indicator },
+    data() {
+      return {
+        companyName: '',
+        shieldCompanyValues: '',
+        shieldId: ''
+      }
+    },
+    created() {
+      Indicator.open()
+      this.init()
+    },
+    methods: {
+      init: function () {
+        this.$store.dispatch('getShieldList').then(res => {
+          if (res.data.code === '200') {
+            if (res.data.data.shieldCompanyValues.length === 0) {
+              this.shieldCompanyValues = null
+            } else {
+              this.shieldCompanyValues = res.data.data.shieldCompanyValues
+            }
+          } else {
+          }
+          Indicator.close()
+        })
+      },
+      cancleShield: function (index) {
+        this.shieldId = this.shieldCompanyValues[index].shieldId
+        console.log(this.shieldId)
+        this.$store.dispatch('cancelShield', this.shieldId).then(res => {
+          console.log(res)
+          if (res.data.code === '200') {
+            this.$vux.toast.text(res.data.message)
+            this.init()
+          } else {
+          }
+        })
+      }
+    }
+  }
+</script>
+
+<style scoped>
+.privacy{
+  background: #f1f1f1;
+  padding: 45px 0;
+}
+.privacy .weui-cell{
+  font-size: 14px;
+}
+.header{
+  background: #d86372;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+}
+</style>
+<style>
+  .header.vux-header .vux-header-left .left-arrow:before {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #fff;
+    border-width: 1px 0 0 1px;
+    -webkit-transform: rotate(315deg);
+    transform: rotate(315deg);
+    top: 8px;
+    left: 7px;
+  }
+  .privacy .mint-radiolist-title{
+    font-size: 14px;
+    display: block;
+    margin: 0;
+    color: #000;
+    background: #FFF;
+    padding: 10px 15px;
+    font-weight: 600;
+  }
+  .company .mint-radiolist-title{
+    margin: 15px 0 0;
+  }
+  .privacy .mint-cell-wrapper{
+    font-size: 14px;
+  }
+  .privacy .mint-radio-input:checked + .mint-radio-core {
+    background-color: #d86372;
+    border-color: #d86372;
+  }
+</style>

@@ -1,0 +1,566 @@
+<template>
+  <div class="company-view" v-loading.body="loading">
+    <scroller 
+      :on-refresh="refresh"
+      :on-infinite="infinite">
+    <div class="logo-box">
+      <div id="coBox" class="co-cover-box"><img :src="bigCover"/></div>
+      <div class="co-nav">
+        <span class="co-logo-box"><img :src="form.logoUrl"/></span>
+        <el-col :xs="24">
+          <span class="co-name">{{form.compyName}}</span>
+        </el-col>
+        <el-col :xs="24" class="nav-col">
+          <tab active-color='#D86471'>
+            <tab-item :selected="selected === 1" @on-item-click="goHome">首页</tab-item>
+            <tab-item :selected="selected === 2" @on-item-click="goAnchor">校园招聘</tab-item>
+            <tab-item :selected="selected === 3" @on-item-click="goCareerTalk">宣讲会</tab-item>
+          </tab>
+        </el-col>
+      </div>
+    </div>
+    <div class="addPart" v-if="selected === 1">
+      <div class="company_summary">
+        <h4 class="h4">公司简介</h4>
+        <div class="company_desc">
+          {{form.summary}}
+          <div>
+            <br>
+          </div>
+        </div>
+      </div>
+      <div class="company_info">
+        <h4>公司基本信息</h4>
+        <div class="co-info-box"><i class="icon iconfont icon-hangye"></i><span class="title-text comIndustry">{{form.industryCodeView}}</span></div>
+        <div class="co-info-box"><i class="icon iconfont icon-jibenziliao"></i><span class="title-text comNatur">{{form.compyNatureView}}</span></div>
+        <div class="co-info-box"><i class="icon iconfont icon-renshu"></i><span class="title-text comSize">{{form.lnassetView}}</span></div>
+        <div class="co-info-box"><i class="icon iconfont icon-web"></i><span class="title-text comHomepage"><a href="JavaScript:void(0)" @click="goToWebSite">{{form.compyUrl}}</a></span></div>
+      </div>
+      <div class="company_contact">
+        <h4 class="h4">联系我们</h4>
+        <p>联系人：<span>{{form.contact}}</span></p>
+        <p>联系邮箱：<span>{{form.compyEmail}}</span></p>
+        <p>固定电话：<span>{{form.contactNumber}}</span></p>
+        <p style="white-space: normal">公司地址：<span>{{form.address}}</span></p>
+      </div>
+    </div>
+      <div class="company-joblist" v-if="selected === 2">
+        <div id="js-list">
+          <ul>
+            <li class="js_job joblist" v-for="(positionValues, index) in positionValues" @click="gotoDetail(index)">
+              <h5>
+                {{positionValues.positionName}}
+              </h5>
+              <p class="tip">
+                <span class="workPlace">{{positionValues.workplace}}</span>
+                <span class="inviteNum">{{positionValues.recruitNumber}}</span>
+                <span class="jobType">{{positionValues.jobTypeDivView}}</span>
+              </p>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="career-talk-box" v-if="selected === 3">
+        <div>
+          <thead style="text-align: center;display: inline-block;">
+          <tr class="th-box">
+            <th class="th-title">
+              <div class="cell">宣讲时间</div>
+            </th>
+            <th class="th-title">
+              <div class="cell">宣讲院校</div>
+            </th>
+            <th class="th-title">
+              <div class="cell">地点</div>
+            </th>
+            <th class="th-title">
+              <div class="cell">城市</div>
+            </th>
+          </tr>
+          <tr class="tr-content" v-for="(arrangeValues, index) in arrangeValues">
+            <td class="th-title"><span>{{arrangeValues.startTimestamp}}</span></td>
+            <td class="th-title"><span>{{arrangeValues.school}}</span></td>
+            <td class="th-title"><span>{{arrangeValues.address}}</span></td>
+            <td class="th-title"><span>{{arrangeValues.city}}</span></td>
+          </tr>
+          </thead>
+        </div>
+      </div>
+    <div class="clearfix"></div>
+    </scroller>
+  </div>
+</template>
+
+<script>
+  import { Tab, TabItem } from 'vux'
+  export default {
+    name: 'company-view',
+    components: { Tab, TabItem },
+    data() {
+      return {
+        loading: true,
+        selected: 1,
+        positionValues: '',
+        workplaces: '',
+        positionQuantity: '',
+        totalPagesPos: '',
+        arrangeValues: '',
+        totalPagesArr: '',
+        miniCover: '',
+        bigCover: '',
+        form: {
+          compyId: '',
+          workplace: '',
+          recruitDiv: '01',
+          logoUrl: '',
+          compyName: '',
+          summary: '',
+          compyUrl: '',
+          contactNumber: '',
+          contact: '',
+          compyEmail: '',
+          address: '',
+          compyNatureView: '',
+          industryCodeView: '',
+          lnassetView: '',
+          arrPage: '',
+          positionPage: '',
+          accountToken: localStorage.getItem('accountToken')
+        }
+      }
+    },
+    created() {
+      this.form.compyId = this.$route.query.compyId
+      this.getCompanyHome()
+      this.getComPosition()
+      this.getArrPosition()
+    },
+    methods: {
+//  企业详情
+      getCompanyHome: function () {
+        this.$store.dispatch('getCompanyHome', this.form).then(res => {
+          if (res.data.code === '200') {
+            console.log('企业首页')
+            console.log(res.data.data.companyDetailDto.compyName)
+            this.form.compyName = res.data.data.companyDetailDto.compyName
+            this.form.summary = res.data.data.companyDetailDto.summary
+            this.form.compyUrl = res.data.data.companyDetailDto.compyUrl
+            this.form.contactNumber = res.data.data.companyDetailDto.contactNumber
+            this.form.contact = res.data.data.companyDetailDto.contact
+            this.form.compyEmail = res.data.data.companyDetailDto.compyEmail
+            this.form.address = res.data.data.companyDetailDto.address
+            this.form.compyNatureView = res.data.data.companyDetailDto.compyNatureView
+            this.form.industryCodeView = res.data.data.companyDetailDto.industryCodeView
+            this.form.lnassetView = res.data.data.companyDetailDto.lnassetView
+            this.form.logoUrl = res.data.data.companyDetailDto.logoUrl
+            this.miniCover = res.data.data.recruitCoverValue.miniCover
+            this.bigCover = res.data.data.recruitCoverValue.bigCover
+          } else {
+            console.log(res)
+          }
+          this.loading = false
+        })
+      },
+//  职位列表
+      getComPosition: function () {
+        this.$store.dispatch('getComPosition', this.form).then(res => {
+          if (res.data.code === '200') {
+            this.positionValues = res.data.data.positionValues
+            this.totalPagesPos = res.data.data.totalPages
+            this.workplaces = res.data.data.workplaces
+            this.positionQuantity = res.data.data.positionQuantity
+          } else {
+          }
+        })
+      },
+      gotoDetail: function (index) {
+        this.form.positionId = this.positionValues[index].positionId
+        this.$router.push({
+          path: '/recruit/job',
+          query: {positionId: this.positionValues[index].positionId}
+        })
+      },
+      pagePosition: function (page) {
+        this.form.positionPage = page - 1
+        this.getComPosition()
+      },
+//  宣讲会列表
+      getArrPosition: function () {
+        this.$store.dispatch('getArrPosition', this.form).then(res => {
+          if (res.data.code === '200') {
+            console.log(res.data.arrangeValues)
+            this.arrangeValues = res.data.data.arrangeValues
+            this.totalPagesArr = res.data.data.totalPages
+          } else {
+          }
+        })
+      },
+      pageArr: function (page) {
+        this.form.arrPage = page - 1
+        this.getArrPosition()
+      },
+      goToWebSite: function () {
+        let regex = /^http(s)?:\/\/([\w-]+\.)+[\w-]+(\/[\w- ./?%&=]*)?$/;
+        if (regex.test(this.form.compyUrl)) {
+          window.open(this.form.compyUrl);
+        } else {
+          window.open('http://' + this.form.compyUrl);
+        }
+      },
+//  锚点
+      goHome() {
+        this.selected = 1
+      },
+      goAnchor() {
+        this.selected = 2
+      },
+      goCareerTalk() {
+        this.selected = 3
+      },
+      refresh: function (done) {
+        console.log('refresh')
+        setTimeout(() => {
+          this.form.page = 0
+          this.companyRecruitValues = []
+          done(true)
+        }, 1500)
+      },
+      infinite: function (done) {
+        let _this = this
+        console.log('infinite called..')
+        if (this.form.page === this.totalPages) {
+          setTimeout(() => {
+            done(true)
+          }, 1500)
+          return;
+        }
+        setTimeout(() => {
+          _this.form.page ++
+          done()
+        }, 1500)
+      }
+    }
+  }
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+  .company-view {
+    margin: 0px auto 20px;
+    font-size: 14px;
+  }
+
+  a {
+    text-decoration: none;
+    color: #444;
+  }
+
+  a:hover {
+    color: #d86370;
+  }
+
+  .addPart {
+    width: 100%;
+    display: inline-block;
+  }
+
+  .main-content {
+    width: 100%;
+    display: inline-block;
+    float: right;
+  }
+
+
+	.company_info .co-info-box .title-text {
+		margin-left: 15px;
+	}
+
+  .company_info {
+    background: #fff;
+    padding: 15px 0;
+    border-bottom: 1px dotted #111;
+    margin: 0 30px;
+  }
+
+  .company_info h4 {
+    font: bold 14px/30px "Microsoft Yahei", Arial, sans-serif;
+  }
+
+  .company_info p {
+    padding: 0 40px 5px 56px;
+    line-height: 28px;
+  }
+
+  .company_info p::before {
+    content: " ";
+    display: inline-block;
+    width: 28px;
+    height: 26px;
+    margin-left: -28px;
+    line-height: 0;
+    vertical-align: bottom;
+  }
+
+  .company_contact {
+    background: #fff;
+    padding: 15px 0;
+    border-bottom: 1px dotted #111;
+    margin: 0 30px;
+  }
+
+  .company_contact h4 {
+    font: bold 14px/30px "Microsoft Yahei", Arial, sans-serif;
+  }
+
+  .company_contact p {
+    padding: 0 24px 0 0px;
+    line-height: 28px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .wx-scan {
+    margin-top: 20px;
+    background: #fff;
+    padding: 8px 0 54px;
+    text-align: center;
+  }
+
+  .wx-scan p {
+    padding: 14px 0;
+    line-height: 30px;
+  }
+
+  .wx-scan img {
+    display: block;
+    margin: 0 auto;
+  }
+
+  .company_summary {
+    background: #fff;
+    padding: 15px 0;
+    border-bottom: 1px dotted #111;
+    margin: 0 30px;
+  }
+
+  .company_summary h4 {
+    font: bold 14px/30px "Microsoft Yahei";
+  }
+
+
+  .company_summary .art_open, .company_summary .art_close {
+    display: none;
+  }
+
+  .company-joblist {
+    background: #fff;
+    padding: 10px 0;
+  }
+
+
+  .company-joblist .jobcount span {
+    color: #d86370;
+  }
+
+  .company-joblist .joblist {
+    padding: 10px 0 10px 30px;
+    border-bottom: 1px solid #f0f4f7;
+    list-style-type: none;
+    cursor: pointer;
+  }
+
+  .company-joblist .joblist:hover {
+    background-color: #F1F1F1;
+  }
+
+  .company-joblist h5 {
+    font: 400 16px/32px "Microsoft Yahei";
+    margin: 0;
+  }
+
+  .company-joblist .tip {
+    font-weight: 400;
+    color: #666;
+    line-height: 32px;
+  }
+
+  .company-joblist .tip .workPlace {
+    background: url(http://cssats1.quanzhi.cn/images/campus/addr-grey.png) left center no-repeat;
+  }
+
+  .company-joblist .tip .inviteNum {
+    background: url(http://cssats1.quanzhi.cn/images/campus/in-grey.png) left center no-repeat;
+  }
+
+  .company-joblist .tip .jobType {
+  	background: url(http://cssats1.quanzhi.cn/images/campus/ji-grey.png) left center no-repeat;
+  }
+  .company-joblist .tip span {
+    padding-left: 20px;
+    margin-right: 20px;
+    font-size: 14px;
+  }
+  .company-joblist .job_list_page {
+    padding: 0 20px;
+    text-align: right;
+  }
+
+  .pagination {
+    font-size: 14px;
+    line-height: 26px;
+    zoom: 1;
+    display: inline-block;
+  }
+
+  .pagination li {
+    float: left;
+    margin: 0 5px;
+    list-style-type: none;
+  }
+
+  .pagination a {
+    display: block;
+    background-color: #fff;
+    cursor: pointer;
+    width: 26px;
+    height: 26px;
+    text-align: center;
+    border: 1px solid #ddd;
+    color: #666666;
+  }
+
+  .pagination .pre.btn-disabled {
+    border-color: #ddd;
+    cursor: default;
+  }
+
+  .pagination a.active {
+    color: #FFF;
+    border-color: #d86370;
+    background: #d86370;
+  }
+
+  /** 公司lego */
+  .company-view .logo-box .co-cover-box {
+    min-height: 80px;
+    max-height: 220px;
+    background-color: #FFF;
+  }
+
+  .company-view .logo-box .co-cover-box img {
+    min-height: 80px;
+    max-height: 220px;
+  }
+
+  .company-view .logo-box img {
+    width: 100%;
+    height: 100%;
+  }
+
+  .company-view .co-nav .co-logo-box {
+    position: absolute;
+    width: 88px;
+    height: 88px;
+    background-color: #F1F1F1;
+    top: 0;
+    left: 0;
+  }
+
+  .company-view .nav-ul {
+    list-style-type: none;
+    display: inline-block;
+    float: right;
+    height: 40px;
+    line-height: 40px;
+    font-size: 14px;
+  }
+
+  .company-view .nav-li {
+    display: inline-block;
+    margin: 0 25px;
+  }
+
+  .company-view .co-nav {
+    height: 88px;
+    background-color: #F9F9F9;
+    margin-bottom: 20px;
+    line-height: 88px;
+    position: relative;
+  }
+
+  .company-view .co-nav .co-name {
+    font-size: 18px;
+    margin-left: 100px;
+  }
+  /** 宣讲会 */
+  .company-view .career-talk-box {
+    float: right;
+    background: #fff;
+    margin-top: 20px;
+  }
+
+  .company-view .th-title {
+    width: 180px;
+  }
+
+  .company-view .th-title .cell {
+    padding: 10px;
+  }
+
+  .tr-content {
+    padding: 15px 0px;
+    border-bottom: 1px solid #F3F3F3;
+    margin-bottom: 6px;
+  }
+
+  .company-view .th-box {
+    border-bottom: 2px solid #E6E6E6;
+  }
+
+  .career-talk-box thead tr {
+    display: inline-block;
+  }
+
+</style>
+
+<style>
+  .company-view .el-input__inner{
+      font-size: 9px!important;
+      width:50px!important;
+      height: 30px!important;
+      padding:5px!important;
+    }
+    .company-view .el-input__icon+.el-input__inner{
+      padding-right: 5px!important;
+    }
+
+	 .company-view .page {
+    text-align: right;
+    padding: 15px;
+  }
+
+  .company-view .el-pager li.active {
+    border-color: #d86370;
+    background-color: #d86370;
+    cursor: pointer;
+  }
+
+  .company-view .el-pager li:hover {
+    color: #FFF;
+  }
+  
+  .company-view .el-table {
+    border-color: #FFF;
+    text-align: center;
+  }
+
+  .company-view .el-table td, .el-table th.is-leaf {
+    border-color: #FFF;
+  }
+  .company-view .clearfix{
+    clear: both;
+  }
+
+
+</style>

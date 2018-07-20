@@ -1,0 +1,78 @@
+<template>
+  <div class="about-us" :class="wechatHeader ? 'wechat-header' : ''">
+    <x-header v-if="!wechatHeader" class="header" :left-options="{backText: ''}">关于我们</x-header>
+    <div class="header-img">
+      <img width="100%" height="100%" src="../../assets/logo.jpg"/>
+    </div>
+    <div style="margin: 20px auto;">
+      <p>每一次和你分开 深深的被你打败</p>
+      <p style="font-weight:700;">得十良马，不如得一 <span style="color: #d86372">伯乐</span></p>
+    </div>
+    <div style="margin: 20px auto;">
+      <p style="font-weight:600;">当前版本 0.0.1</p>
+      <p style="font-size: 14px;">www.bolego.top</p>
+    </div>
+  </div>
+</template>
+
+<script>
+  import { XHeader } from 'vux'
+
+  export default {
+    name: 'about-us',
+    components: { XHeader },
+    data() {
+      return {
+        wechatHeader: false
+      }
+    },
+    created() {
+      if (this.$route.query.wechatHeader){
+        this.wechatHeader = this.$route.query.wechatHeader
+      }
+    },
+    methods: {
+    }
+  }
+</script>
+
+<style scoped>
+.about-us{
+  background: #fff;
+  text-align: center;
+  color: #666;
+  font-size: 16px;
+  padding: 45px 0;
+}
+.header{
+  background: #d86372;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+}
+.header-img{
+  width: 180px;
+  height: 180px;
+  margin: 40px auto;
+  border-radius: 50%;
+}
+.header-img img{
+  border-radius: 50%;
+}
+</style>
+<style>
+  .header.vux-header .vux-header-left .left-arrow:before {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #fff;
+    border-width: 1px 0 0 1px;
+    -webkit-transform: rotate(315deg);
+    transform: rotate(315deg);
+    top: 8px;
+    left: 7px;
+  }
+</style>

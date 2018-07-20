@@ -1,0 +1,91 @@
+<template>
+  <div class="setting" :class="wechatHeader ? 'wechat-header' : ''">
+    <x-header v-if="!wechatHeader" class="header" :left-options="{backText: ''}">设置</x-header>
+    <group>
+      <cell title="我的账号" is-link :link="{path:'/user/setting/account'}"></cell>
+      <cell title="密码设置" is-link :link="{path:'/user/setting/password'}"></cell>
+    </group>
+    <group>
+      <cell title="关于我们" is-link :link="{path:'/user/setting/about'}"></cell>
+      <cell title="用户协议" is-link :link="{path:'/user/setting/agreement'}"></cell>
+    </group>
+    <group v-if="!wechatHeader">
+      <x-button class="loginout" v-if="isLogin" type="default" @click.native="loginOut()">退出登录</x-button>
+    </group>
+  </div>
+</template>
+
+<script>
+  import { XHeader, Group, Cell, XButton } from 'vux'
+
+  export default {
+    name: 'setting',
+    components: {XHeader, Group, Cell, XButton},
+    data () {
+      return {
+        wechatHeader: false,
+        isLogin: false
+      }
+    },
+    created () {
+      if (this.$route.query.wechatHeader){
+        this.wechatHeader = this.$route.query.wechatHeader
+      }
+    },
+    activated(){
+      this.isLogin = localStorage.getItem('accountToken')
+    },
+    methods: {
+      loginOut () {
+        this.$store.dispatch('loginOut', this.accountToken).then(res => {
+          if (res.data.code === '200') {
+            this.$store.commit('setResume', '')
+            this.$vux.toast.text(res.data.message)
+            this.$router.replace({path: '/recruit'})
+          } else {
+            this.$vux.toast.text(res.data.message)
+          }
+        })
+      }
+    }
+  }
+</script>
+
+<style scoped>
+  .setting {
+    background: #f1f1f1;
+    padding: 45px 0;
+  }
+
+  .setting .weui-cell {
+    font-size: 14px;
+  }
+
+  .header {
+    background: #d86372;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+  }
+
+  .loginout {
+    background: #FFF;
+    color: #d86372;
+  }
+</style>
+<style>
+  .header.vux-header .vux-header-left .left-arrow:before {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #fff;
+    border-width: 1px 0 0 1px;
+    -webkit-transform: rotate(315deg);
+    transform: rotate(315deg);
+    top: 8px;
+    left: 7px;
+  }
+</style>

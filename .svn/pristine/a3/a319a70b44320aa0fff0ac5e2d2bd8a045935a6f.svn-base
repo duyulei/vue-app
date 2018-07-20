@@ -1,0 +1,426 @@
+<template>
+  <div class="job-view">
+    <x-header class="header" :left-options="{backText: ''}">职位详情</x-header>
+    <div class="banner">
+      <div class="positiondetail-simple">
+        <div class="xiangqingtitle">
+          <div class="title">{{positionName}} <span style="margin-left:10px; color:#d86370">【{{salary}}K】</span></div>
+          <div>
+            <el-row>
+              <el-col :span="6">
+                <span style="color:#d86372;margin-right:3px;"><i class="iconfont icon-adress"></i></span><span>{{workCityView}}</span>
+              </el-col>
+              <el-col :span="6">
+                <span style="color:#d86372;margin-right:3px;"><i class="iconfont icon-quanzhi"></i></span><span>{{jobTypeDiv}}</span>
+              </el-col>
+              <el-col :span="6">
+                <span style="color:#d86372;margin-right:3px;"><i class="iconfont icon-shijian"></i></span><span>{{updateTimestamp}}</span>
+              </el-col>
+              <el-col :span="6">
+                <span style="color:#d86372;margin-right:3px;"><i class="iconfont icon-shuliang"></i></span><span>{{recruitNumber}}人</span>
+              </el-col>
+            </el-row>
+          </div>
+        </div>
+        <cell-box is-link @click.native="gotoCompany" class="header-cell">
+          <div class="header-img">
+            <img width="100%" :src="companyLogo"/>
+          </div>
+          <div class="header-info">
+            <p style="font-size: 17px; color: #444">{{companyName}}</p>
+            <p>{{nature}} | {{lnasset}}</p>
+          </div>
+        </cell-box>
+        <div class="xiangqingcontain">
+          <div>
+            <span style="color:#d86372;margin-right:5px;"><i style="font-size: 24px;" class="iconfont icon-miaoshu"></i></span>
+            <span style="font-size:18px;">职位描述</span>
+          </div>
+          <ul class="xiangqinglist clearfix">
+            <div class="xiangqingtext">
+              <p>工作职责:</p>
+              <p v-html="responsibilities">
+              </p>
+              <!--<p>工作要求:</p>-->
+              <!--<p>-->
+              <!--<br> 具备平台，企业服务，SAAS，电商，招聘，社交或者其他商业化产品的产品管理经验者优先。-->
+              <!--<br> 具备实际（有事实可以论证）的跨职能团队的产品开发和管理经验者优先。-->
+              <!--<br> 参与过成功产品的迭代和发版。-->
+              <!--<br> 有创业公司工作的经历。-->
+              <!--<br> 能够主动，自驱，独立地工作。能够积极沟通，开放协作。-->
+              <!--<br>-->
+              <!--</p>-->
+              <br>
+              <p>任职资格：</p>
+              <p v-html="qualifications">
+              </p>
+              <br>
+              <p>工作地点:</p>
+              <p>{{workplace}}</p>
+            </div>
+          </ul>
+        </div>
+      </div>
+
+      <div class="detail clearfix">
+        <el-row>
+          <el-col :span="24">
+            <div class="footerbtn fl">
+              <span class="appled" :loading="applyLoad" v-if="isApply">已申请</span>
+              <el-button class="apply" :loading="applyLoad" @click="goToApply" v-else>现在申请</el-button>
+            </div>
+          </el-col>
+          <!--<el-col :span="6">-->
+          <!--<div class="share">-->
+          <!--<img style="" width="15px" src="../../assets/share.png"/>-->
+          <!--<div>分享</div>-->
+          <!--</div>-->
+          <!--</el-col>-->
+        </el-row>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  import { XHeader, CellBox } from 'vux'
+  import axios from 'axios'
+  import wx from 'weixin-js-sdk'
+
+  document.body.scrollTop = 0
+  document.documentElement.scrollTop = 0
+  export default {
+    name: 'job-view',
+    components: {XHeader, CellBox},
+    data () {
+      return {
+        applyLoad: false,
+        positionName: '',
+        companyLogo: '',
+        companyName: '',
+        nature: '',
+        lnasset: '',
+        jobTypeDiv: '',
+        salary: '',
+        recruitNumber: '',
+        updateTimestamp: '',
+        endTimestamp: '',
+        workplace: '',
+        workCityView: '',
+        responsibilities: '',
+        qualifications: '',
+        education: '',
+        isApply: false,
+        form: {
+          positionId: '',
+          accountToken: ''
+        },
+        backView: '',
+        recruitDiv: '',
+        compyId: ''
+      }
+    },
+    created () {
+      if (this.$route.query.recruitDiv) {
+        this.recruitDiv = this.$route.query.recruitDiv
+      }
+      this.form.positionId = this.$route.query.positionId
+      this.init()
+      this.backView = this.$route.query.backView
+      this.$store.dispatch('getComPositionDetail', this.form).then(res => {
+        console.log(res)
+        if (res.data.code === '200') {
+          this.positionName = res.data.data.positionName
+          this.companyLogo = res.data.data.companyLogo
+          this.companyName = res.data.data.companyName
+          this.nature = res.data.data.nature
+          this.lnasset = res.data.data.lnasset
+          this.jobTypeDiv = res.data.data.jobTypeDiv
+          this.salary = res.data.data.salary
+          this.recruitNumber = res.data.data.recruitNumber
+          this.updateTimestamp = res.data.data.updateTimestamp
+          this.endTimestamp = res.data.data.endTimestamp
+          this.workplace = res.data.data.workplace
+          this.workCityView = res.data.data.workCityView
+          this.compyId = res.data.data.companyId
+          this.responsibilities = res.data.data.responsibilities
+          this.qualifications = res.data.data.qualifications
+          this.posieducationtionName = res.data.data.education
+          document.title = this.positionName
+        } else {
+        }
+        this.loading = false
+      })
+    },
+    mounted () {
+      var _this = this
+      // alert(window.location.href)
+      let u = navigator.userAgent
+      let isIOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/)
+      axios({
+        url: 'get/jsapiticket',
+        method: 'post',
+        data: {
+          formUrl: isIOS ? sessionStorage.getItem('firstUrl') : window.location.href
+        },
+        transformRequest: [function (data) {
+          // Do whatever you want to transform the data
+          let ret = ''
+          for (let it in data) {
+            ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+          }
+          return ret
+        }],
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+        }
+      }).then(function (res) {
+        let nonceStr2 = res.data.data.nonceStr
+        let timestamp2 = res.data.data.timestamp
+        let signature = res.data.data.signature
+        wx.config({
+          debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+          appId: 'wx91c9b61b0a194602', // 必填，公众号的唯一标识
+          timestamp: timestamp2, // 必填，生成签名的时间戳
+          nonceStr: nonceStr2, // 必填，生成签名的随机串
+          signature: signature, // 必填，签名，见附录1
+          jsApiList: ['onMenuShareAppMessage', 'onMenuShareTimeline'] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+        })
+        wx.ready(function () {
+          wx.onMenuShareAppMessage({
+            title: _this.positionName,
+            desc: _this.responsibilities.toString().replace(new RegExp('<br>', 'gm'), ''),
+            link: 'https://m.bolego.top/recruit/job?positionId=' + _this.form.positionId,
+            imgUrl: _this.companyLogo
+          })
+          wx.onMenuShareTimeline({
+            title: _this.positionName,
+            desc: _this.responsibilities.toString().replace(new RegExp('<br>', 'gm'), ''),
+            link: 'https://m.bolego.top/recruit/job?positionId=' + _this.form.positionId,
+            imgUrl: _this.companyLogo
+          })
+        })
+        wx.error(function (res) {
+        })
+      }).catch(function (response) {
+      })
+    },
+    methods: {
+      init: function () {
+        if (localStorage.getItem('accountToken')) {
+          this.applyLoad = true
+          this.$store.dispatch('isApply', this.form).then(res => {
+            console.log(res)
+            if (res.data.code === '200') {
+              console.log(res.data)
+              this.isApply = res.data.data
+            } else {
+            }
+            this.applyLoad = false
+          })
+        }
+      },
+      gotoCompany: function () {
+        this.$router.push({
+          path: '/recruit/company',
+          query: {compyId: this.compyId, recruitDiv: this.recruitDiv}
+        })
+      },
+      goBack: function () {
+        this.$router.push(this.backView)
+      },
+      goToApply: function () {
+        this.$store.dispatch('goToApply', this.form).then(res => {
+          console.log(res)
+          if (res.data.code === '200') {
+            console.log(res.data)
+            this.isApply = true
+          } else {
+          }
+          this.loading = false
+        })
+      }
+    }
+  }
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+  .job-view {
+    background-color: #f1f1f1;
+  }
+
+  .banner {
+    margin: 0;
+    padding-top: 45px;
+  }
+
+  .header {
+    background: #d86372;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+  }
+
+  .positiondetail-simple {
+  }
+
+  .xiangqingtitle {
+    padding: 20px;
+    background: #fff;
+    border-bottom: 1px solid #d9d9d9;
+  }
+
+  .xiangqingtitle .title {
+    font-size: 18px;
+    padding-bottom: 20px;
+  }
+
+  .zhiweixiangqing span {
+    font-size: 16px;
+  }
+
+  .xiangqingline {
+    width: 60px;
+    border-top: 2px solid #d86370;
+    margin-top: -2px;
+  }
+
+  ul.xiangqinglist {
+    margin: 5px 0px;
+    display: inline-block;
+    padding-bottom: 30px;
+  }
+
+  .clearfix {
+    zoom: 1;
+  }
+
+  li.nvalue {
+    width: 80px;
+    padding-right: 4px;
+  }
+
+  .xiangqinglist li {
+    float: left;
+    font-size: 13px;
+    list-style: none;
+    margin: 0px 10px 10px 0px;
+  }
+
+  .xiangqingtext {
+    margin-top: 20px;
+    font-size: 14px;
+  }
+
+  .xiangqingtext p {
+    margin: 0px 0px 5px 0px;
+    font-size: 13px;
+    line-height: 24px;
+  }
+
+  .footerbtn .apply {
+    font-size: 14px;
+    margin-right: 10px;
+    line-height: 35px;
+    padding: 6px 50px;
+    background: #d86370;
+    color: #FFF;
+    text-decoration: none;
+    cursor: pointer;
+    width: 100%;
+    border: none;
+    border-radius: 0;
+    height: 50px;
+  }
+
+  .footerbtn .appled {
+    font-size: 14px;
+    margin-right: 10px;
+    line-height: 35px;
+    padding: 6px 50px;
+    background: #ccc;
+    color: #444;
+    display: inline-block;
+    width: 100%;
+    border: none;
+    border-radius: 0;
+    height: 50px;
+    text-align: center;
+  }
+
+  .footerbtn .apply:hover {
+    background: #c86370;
+  }
+
+  .detail {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    height: 50px;
+    background: #FFF;
+  }
+
+  a {
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: #d86370;
+  }
+
+  .share {
+    padding-top: 4px;
+    height: 50px;
+    text-align: center;
+    background: #f1f1f1;
+    border-top: 1px solid #ccc;
+  }
+
+  .el-col-6 {
+    width: auto;
+    margin: 0 10px;
+  }
+
+  .header-cell {
+    background: #FFF;
+  }
+
+  .header-cell.weui-cell {
+    margin-bottom: 7px;
+  }
+
+  .header-cell.weui-cell:before {
+    content: none;
+  }
+
+  .header-img {
+    width: 80px;
+    margin-right: 20px;
+  }
+
+  .header-info {
+    line-height: 35px;
+  }
+
+  .xiangqingcontain {
+    padding: 20px;
+    background: #FFF;
+  }
+</style>
+<style>
+  .header.vux-header .vux-header-left .left-arrow:before {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #fff;
+    border-width: 1px 0 0 1px;
+    -webkit-transform: rotate(315deg);
+    transform: rotate(315deg);
+    top: 8px;
+    left: 7px;
+  }
+</style>

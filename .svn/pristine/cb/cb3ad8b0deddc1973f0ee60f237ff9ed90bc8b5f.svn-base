@@ -1,0 +1,19 @@
+<template>
+  <div class="home-view">
+    home-view
+  </div>
+</template>
+
+<script>
+  export default {
+    name: 'home-view',
+    data () {
+      return {}
+    }
+  }
+</script>
+
+<style scoped>
+  .home-view {
+  }
+</style>

@@ -1,0 +1,100 @@
+<template>
+  <div class="about-us">
+    <x-header class="header" :left-options="{backText: ''}">顾指数</x-header>
+    
+        <div class="row content">
+            <!-- 用户协议板块 -->
+            <div class="col-xs-12" id="userAgreementDiv">
+                <div class="about-us-head">顾指数</div>
+                <div class="row">
+                    <div class="col-xs-11 user-agreement-text">
+                        <h4>（五）免责条款</h4>
+                        <p>
+                            1、使用者理解并同意伯乐顾（BoleGo.top）对以下情况免责：
+                            （1）应聘信息发布方对存入简历中心的个人简历及材料的格式、内容的真实性、准确性和合法性负有全部责任，招聘信息发布方对于其在职位数据库公布的材料的真实性、准确性和合法性负有全部责任。伯乐顾（BoleGo.top）仅是提供职位发布等信息的平台，伯乐顾（BoleGo.top）不对应聘及招聘信息的真实性、有效性、准确性负责。
+                            <br>
+                            （2）伯乐顾（BoleGo.top）并不能时时监视此网址，但保留进行随时监视的权利。对于非伯乐顾（BoleGo.top）公布的材料，伯乐顾（BoleGo.top）一概不负任何责任。
+                            <br>
+                            （3）伯乐顾（BoleGo.top）虽然对用户进行资质审查，但伯乐顾（BoleGo.top）并非司法机关，仅能要求用户提交真实、有效的资质证明文件，并对该提交的资质证明文件进行审核。如用户提交虚假、伪造、变造文件的，伯乐顾（BoleGo.top）对此概不承担法律责任。
+                            <br>
+                            （4）伯乐顾（BoleGo.top）不对用户的线下行为负责。企业用户及个人用户均应审慎的对待他方之行为，因为他方之行为给用户造成任何不利影响的，伯乐顾（BoleGo.top）不承担任何法律责任。
+                            <br>
+                            （5）伯乐顾（BoleGo.top）不能保证某一种职位描述会有一定数目的使用者来浏览，也不能保证会有一位特定的使用者来浏览。
+                            <br>
+                            （6）伯乐顾（BoleGo.top）对由于政府禁令、现行生效的适用法律或法规的变更、火灾、地震、动乱、战争、停电、通讯线路中断、黑客攻击、计算机病毒侵入或发作、电信部门技术调整、因政府管制而造成网站的暂时性关闭等任何影响网络正常运营的不可预见、不可避免、不可克服和不可控制的事件（“不可抗力事件”），以及他人蓄意破坏、伯乐顾（BoleGo.top）工作人员的疏忽或不当使用，正常的系统维护、系统升级，或者因网络拥塞而导致本网站不能访问而造成的本网站所提供的信息及数据的延误、停滞或错误，以及使用者由此受到的一切损失不承担任何责任。
+                            <br>
+                            （7）由于与本网站链接的其他网站或用户所使用的网络运营商所造成之个人资料泄露及由此而导致的任何法律争议和后果均由网站或用户所使用的网络运营商负责；
+                            <br>
+                            （8）对于伯乐顾（BoleGo.top）为使用者提供便利而设置的外部链接网址，伯乐顾（BoleGo.top）并不保证其准确性、安全性和完整性，亦并不代表本网站对其链接内容的认可，请使用者谨慎确认后使用，伯乐顾（BoleGo.top）对由此导致的任何损失或伤害不承担任何责任。
+                            <br>
+                            2、除了本网址在隐私政策中提出的条款外，使用者理解并同意伯乐顾（BoleGo.top）在不公开姓名的情况下，可以向第三方提供综合性的非个人化信息资料。除非：
+                            （1）依照法律、法规、法院命令、监管机构命令的要求；
+                            <br>
+                            （2）根据政府行为、监管要求或请求；
+                            <br>
+                            （3）因伯乐顾（BoleGo.top）其认为系为遵守监管义务或公共目的所需；
+                            <br>
+                            （4）为免除访问者在生命、身体或财产方面之急迫危险，否则在没有本人事先同意的情况下，伯乐顾（BoleGo.top） 不会向第三方公开你的姓名、地址、电子邮件和电话等个人信息。
+                        </p>
+                    </div>
+                    <div class="col-xs-1">
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+  </div>
+</template>
+
+<script>
+  import { XHeader } from 'vux'
+
+  export default {
+    name: 'about-us',
+    components: { XHeader },
+    data() {
+      return {
+      }
+    },
+    created() {
+    },
+    methods: {
+    }
+  }
+</script>
+
+<style scoped>
+.about-us{
+  background: #fff;
+  color: #666;
+  font-size: 16px;
+  padding: 40px 0;
+}
+.header{
+  background: #d86372;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+}
+.content{
+  padding: 15px;
+  font-size: 12px;
+}
+</style>
+<style>
+  .header.vux-header .vux-header-left .left-arrow:before {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #fff;
+    border-width: 1px 0 0 1px;
+    -webkit-transform: rotate(315deg);
+    transform: rotate(315deg);
+    top: 8px;
+    left: 7px;
+  }
+</style>

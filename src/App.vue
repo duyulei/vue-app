@@ -1,0 +1,148 @@
+<template>
+  <div class="app">
+    <!-- main content -->
+
+    <transition :name="'vux-pop-' + (direction === 'forward' ? 'in' : 'out')">
+      <keep-alive v-if="$route.meta.keepAlive">
+        <router-view v-if="$route.meta.keepAlive" class="router-view"></router-view>
+      </keep-alive>
+      <router-view v-if="!$route.meta.keepAlive" class="router-view"></router-view>
+    </transition>
+
+  </div>
+</template>
+
+<script>
+  import { mapState } from 'vuex'
+  import { XHeader } from 'vux'
+
+  export default {
+    name: 'app',
+    components: {
+      XHeader
+    },
+    data () {
+      return {}
+    },
+    computed: {
+      ...mapState({
+        direction: state => state.vux.direction
+      })
+    }
+  }
+</script>
+
+
+<style lang="less">
+  @import '~vux/src/styles/reset.less';
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    background-color: #FFF;
+    font-size: 13px;
+    color: #444444;
+    font-family: 'Source Sans Pro', Helvetica Neue, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html, body {
+    height: 100%;
+    width: 100%;
+    text-size-adjust: none;
+    overflow-x: hidden;
+  }
+
+  .app {
+    width: 100%;
+    height: 100%;
+  }
+
+  .router-view {
+    width: 100%;
+    height: 100%;
+  }
+  .vux-datetime{
+    font-weight: 100 !important;
+  }
+  .vux-pop-out-enter-active,
+  .vux-pop-out-leave-active,
+  .vux-pop-in-enter-active,
+  .vux-pop-in-leave-active {
+    will-change: transform;
+    transition: all .6s ease .1s;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
+    perspective: 1000;
+  }
+
+  .vux-pop-out-enter,
+  .vux-pop-in-leave-active {
+    opacity: 0;
+    transform: translate3d(-100%, 0, 0);
+  }
+
+  .vux-pop-in-enter,
+  .vux-pop-out-leave-active {
+    opacity: 0;
+    transform: translate3d(100%, 0, 0);
+  }
+
+  .user-defined:after {
+    content: "";
+    position: absolute;
+    left: 7px;
+    top: 15px;
+    height: 20px;
+    width: 3px;
+    background: #D86471;
+    -webkit-transform-origin: 0 0;
+    transform-origin: 0 0;
+    -webkit-transform: scaleY(0.5);
+    transform: scaleY(0.5);
+  }
+
+  *::-webkit-input-placeholder { /* WebKit browsers */
+    color: #bbb;
+    font-size: 14px;
+  }
+
+  *:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+    color: #bbb;
+    font-size: 14px;
+  }
+
+  *::-moz-placeholder { /* Mozilla Firefox 19+ */
+    color: #bbb;
+    font-size: 14px;
+  }
+
+  *:-ms-input-placeholder { /* Internet Explorer 10+ */
+    color: #bbb;
+    font-size: 14px;
+  }
+
+  .vux-cell-placeholder {
+    color: #bbb !important;
+    font-size: 14px !important;
+  }
+
+  .vux-cell-value {
+    color: #444 !important;
+  }
+
+  .mint-indicator-wrapper {
+    background: #d86372
+  }
+  .wechat-header{
+    padding-top: 0.1px !important;
+  }
+
+</style>
+

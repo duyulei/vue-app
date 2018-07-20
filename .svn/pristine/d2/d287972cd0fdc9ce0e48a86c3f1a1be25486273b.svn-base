@@ -1,0 +1,213 @@
+<template>
+  <div class="user">
+    <div class="setting"><i @click="goSetting()" style="color: #d86372; font-size:25px;" slot="icon" class="iconfont icon-settings"></i></div>
+      <cell-box is-link :link="{path:'edit/info'}" class="header-cell">
+          <div class="header">
+            <img v-if="resume" width="100%" height="100%" :src="resume.basicInfoValue.headAddr"/>
+            <img v-else width="100%" height="100%" src="../../assets/header.png"/>
+          </div>
+          <div class="header-info">
+            <p v-if="resume">{{resume.basicInfoValue.realName}}</p>
+            <p v-else>加载中...</p>
+            <p v-if="resume">{{phoneView}}</p>
+            <p v-else>加载中...</p>
+          </div>
+      </cell-box>
+    <!-- <tabbar class="user-tabbar">
+      <tabbar-item link="/resume">
+        <img slot="icon" src="../../assets/home_resume.png">
+        <span slot="label">简历</span>
+      </tabbar-item>
+      <tabbar-item link="/user/delivery" show-dot>
+        <img slot="icon" src="../../assets/home_chengdu.png">
+        <span slot="label">我的投递</span>
+      </tabbar-item>
+      <tabbar-item link="/user/viewed">
+        <img slot="icon" src="../../assets/home_campus.png">
+        <span slot="label">被查看量</span>
+      </tabbar-item>
+      <tabbar-item link="/user/payviewed" badge="2">
+        <img slot="icon" src="../../assets/home_resume.png">
+        <span slot="label">付费查看量</span>
+      </tabbar-item>
+    </tabbar> -->
+    <grid class="user-grid">
+      <grid-item label="简历" :link="{ path: '/resume'}">
+        <i style="color: #2e6da4; font-size:25px;" slot="icon" class="iconfont icon-resume"></i>
+      </grid-item>
+      <grid-item label="我的投递" :link="{ path: '/user/delivery'}">
+        <i style="color: #eea236; font-size:25px;" slot="icon" class="iconfont icon-toudijianli"></i>
+      </grid-item>
+      <grid-item label="被查看" :link="{ path: '/user/viewed'}">
+        <i style="color: #4cae4c; font-size:25px;" slot="icon" class="iconfont icon-chakan1"></i>
+      </grid-item>
+      <grid-item label="付费查看" :link="{ path: '/user/payviewed'}">
+        <i style="color: #d86372; font-size:25px;" slot="icon" class="iconfont icon-fufei"></i>
+        <!-- <span class="badge"></span> -->
+      </grid-item>
+    </grid>
+    <group>
+      <cell title="账户资金" is-link :link="{path:'user/fund'}"></cell>
+      <popup-radio title="求职状态" :options="status" v-model="workState"></popup-radio>
+    </group>
+    <group>
+      <cell title="隐私设置" is-link :link="{path:'user/privacy'}" value="设置隐私保护中"></cell>
+    </group>
+  </div>
+</template>
+
+<script>
+  import { Group, Cell, PopupRadio, Tabbar, TabbarItem, CellBox, Grid, GridItem } from 'vux'
+  import { mapState } from 'vuex'
+
+  export default {
+    name: 'user',
+    components: { Group, Cell, PopupRadio, Tabbar, TabbarItem, CellBox, Grid, GridItem },
+    data() {
+      return {
+        workState: '',
+        status: [
+          {
+            key: '01',
+            value: '离职，随时到岗'
+          },
+          {
+            key: '02',
+            value: '在职，考虑机会'
+          },
+          {
+            key: '03',
+            value: '在职，不考虑机会'
+          },
+          {
+            key: '04',
+            value: '我是应届生'
+          },
+          {
+            key: '05',
+            value: '在读，寻找实习'
+          },
+          {
+            key: '06',
+            value: '在职，在实习中'
+          },
+          {
+            key: '07',
+            value: '创业找合伙人'
+          }
+        ]
+      }
+    },
+    watch: {
+      workState (val, old) {
+        if (old) {
+          this.save(val)
+        }
+      }
+    },
+    computed: mapState({
+      resume: state => state.resume.resume,
+      phoneView: function(state) {
+        let start = state.resume.resume.basicInfoValue.mobileNo.slice(0, 3)
+        let end = state.resume.resume.basicInfoValue.mobileNo.slice(-4)
+        return start + '****' + end
+      }
+    }),
+    created() {
+      this.init()
+      this.$emit('selectFun', 2);
+      if (this.resume) {
+        this.workState = this.resume.basicInfoValue.workState
+      }
+    },
+    methods: {
+      init: function () {
+        this.$store.dispatch('getResume', this.form).then(res => {
+          if (res.data.code === '200') {
+            this.workState = res.data.data.basicInfoValue.workState
+          }
+        })
+      },
+      save (val) {
+        this.$store.dispatch('editWorkState', val).then(res => {
+          if (res.data.code === '200') {
+          } else {
+            this.$vux.toast.text(res.data.message)
+          }
+        })
+      },
+      //  跳转到设置
+      goSetting: function () {
+        this.$router.push({path: '/user/setting'})
+      },
+      //  跳转简历
+      goResume: function () {
+        this.$router.push({path: '/resume'})
+      }
+    },
+    activated () {
+      this.$store.dispatch('getResume', this.form).then(res => {
+        if (res.data.code === '200') {
+          this.workState = res.data.data.basicInfoValue.workState
+        }
+      })
+    }
+  }
+</script>
+
+<style scoped>
+.user{
+  background: #f1f1f1;
+}
+.user .weui-cell{
+  font-size: 14px;
+}
+.setting{
+  text-align: right;
+  background: #FFF;
+  padding: 5px 15px 0 0;
+}
+.header-cell{
+  background: #FFF;
+}
+.header-cell.weui-cell{
+  padding: 0px 15px 15px;
+}
+.header-cell.weui-cell:before{
+  content: none;
+}
+.header{
+  width: 80px;
+  height: 80px;
+  margin-right: 20px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+.header-info{
+  line-height: 35px;
+}
+.user-tabbar{
+  position: relative !important;
+  background: #FFF;
+}
+.user-grid{
+  background: #FFF;
+  text-align: center;
+}
+.badge{
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+  background: red;
+  border-radius: 10px;
+  position: absolute;
+  top: 22px;
+  right: 30%;
+}
+</style>
+<style>
+.user .weui-cells{
+  font-size: 14px;
+}
+</style>
+

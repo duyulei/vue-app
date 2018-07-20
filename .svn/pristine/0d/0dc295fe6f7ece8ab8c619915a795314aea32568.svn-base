@@ -1,0 +1,446 @@
+import Vue from 'vue'
+import Router from 'vue-router'
+
+Vue.use(Router)
+export default new Router({
+  mode: 'history',
+  routes: [
+    {
+      path: '*',
+      redirect: '/'
+    },
+    {
+      path: '/',
+      component: resolve => require(['@/views/IndexView.vue'], resolve),
+      children: [
+        {
+          path: '/',
+          redirect: '/home'
+        },
+        {
+          path: '/home',
+          name: '首页',
+          component: resolve => require(['@/views/home/HomeView'], resolve),
+          meta: {
+            keepAlive: true,
+            requireAuth: true
+          }
+        },
+        {
+          path: '/recruit',
+          name: '招聘',
+          component: resolve => require(['@/views/recruit/RecruitHomeView'], resolve),
+          meta: {
+            keepAlive: true
+          }
+        },
+        {
+          path: '/user',
+          name: '我的',
+          component: resolve => require(['@/views/user/UserView'], resolve),
+          meta: {
+            keepAlive: true,
+            requireAuth: true
+          }
+        }
+      ]
+    },
+    {
+      path: '/resume',
+      name: '简历',
+      component: resolve => require(['@/views/resume/ResumeView.vue'], resolve),
+      meta: {
+        keepAlive: false,
+        requireAuth: true
+      }
+    },
+    {
+      path: '/home/notice',
+      name: '服务提醒',
+      component: resolve => require(['@/views/home/NoticeView.vue'], resolve),
+      meta: {
+        keepAlive: true
+      }
+    },
+    {
+      path: '/login',
+      name: '登录',
+      component: resolve => require(['@/views/login/LoginView.vue'], resolve),
+      meta: {
+        keepAlive: true
+      }
+    },
+    {
+      path: '/wechat/bind',
+      name: '微信绑定',
+      component: resolve => require(['@/views/login/WechatBindView.vue'], resolve),
+      meta: {
+        keepAlive: true
+      }
+    },
+    {
+      path: '/retrieve-password',
+      name: '找回密码',
+      component: resolve => require(['@/views/login/RetrievePasswordView.vue'], resolve),
+      meta: {
+        keepAlive: true
+      }
+    },
+    {
+      path: '/set-password',
+      name: '设置密码',
+      component: resolve => require(['@/views/login/SetPasswordView.vue'], resolve),
+      meta: {
+        keepAlive: true
+      }
+    },
+    {
+      path: '/regist',
+      name: '注册',
+      component: resolve => require(['@/views/login/RegistView.vue'], resolve),
+      meta: {
+        keepAlive: true
+      }
+    },
+    {
+      path: '/user/delivery',
+      name: '投递记录',
+      component: resolve => require(['@/views/user/DeliveryView.vue'], resolve),
+      meta: {
+        keepAlive: false
+      }
+    },
+    {
+      path: '/user/viewed',
+      name: '被查看记录',
+      component: resolve => require(['@/views/user/BeViewedView.vue'], resolve),
+      meta: {
+        keepAlive: false
+      }
+    },
+    {
+      path: '/user/payviewed',
+      name: '付费查看记录',
+      component: resolve => require(['@/views/user/PayViewedView.vue'], resolve),
+      meta: {
+        keepAlive: false
+      }
+    },
+    {
+      path: '/user/fund',
+      name: '账户资金',
+      component: resolve => require(['@/views/user/AccountFundView.vue'], resolve),
+      meta: {
+        keepAlive: false
+      }
+    },
+    {
+      path: '/user/fund/withdrawals',
+      name: '提现选择',
+      component: resolve => require(['@/views/user/WithdrawalsView.vue'], resolve),
+      meta: {
+        keepAlive: false
+      }
+    },
+    {
+      path: '/user/fund/withdrawals/detail',
+      name: '提现',
+      component: resolve => require(['@/views/user/WithdrawalsDetailView.vue'], resolve),
+      meta: {
+        keepAlive: false
+      }
+    },
+    {
+      path: '/user/fund/withdrawals/detail/success',
+      name: '提现成功',
+      component: resolve => require(['@/views/user/WithdrawalsSuccessView.vue'], resolve),
+      meta: {
+        keepAlive: false
+      }
+    },
+    {
+      path: '/user/fund/alipay',
+      name: '支付宝账户',
+      component: resolve => require(['@/views/user/AlipayAccountView.vue'], resolve),
+      meta: {
+        keepAlive: false
+      }
+    },
+    {
+      path: '/user/fund/detail',
+      name: '收支详情',
+      component: resolve => require(['@/views/user/FundDetailView.vue'], resolve),
+      meta: {
+      }
+    },
+    {
+      path: '/user/privacy',
+      name: '隐私设置',
+      component: resolve => require(['@/views/user/PrivacyView.vue'], resolve),
+      meta: {
+        keepAlive: false
+      }
+    },
+    {
+      path: '/user/privacy/shield',
+      name: '屏蔽企业',
+      component: resolve => require(['@/views/user/ShieldCompanyView.vue'], resolve),
+      meta: {
+        keepAlive: false
+      }
+    },
+    {
+      path: '/user/privacy/shield/add',
+      name: '添加屏蔽企业',
+      component: resolve => require(['@/views/user/ShieldAddCompanyView.vue'], resolve),
+      meta: {
+        keepAlive: false
+      }
+    },
+    {
+      path: '/user/setting',
+      name: '设置',
+      component: resolve => require(['@/views/user/SettingView.vue'], resolve),
+      meta: {
+        keepAlive: true
+      }
+    },
+    {
+      path: '/user/setting/account',
+      name: '我的帐号',
+      component: resolve => require(['@/views/user/AccountView.vue'], resolve),
+      meta: {
+        keepAlive: false
+      }
+    },
+    {
+      path: '/user/setting/account/reset-phone-one',
+      name: '更换手机',
+      component: resolve => require(['@/views/user/ResetPhoneOneView.vue'], resolve),
+      meta: {
+        keepAlive: false
+      }
+    },
+    {
+      path: '/user/setting/account/reset-phone-two',
+      name: '重置手机',
+      component: resolve => require(['@/views/user/ResetPhoneTwoView.vue'], resolve),
+      meta: {
+        keepAlive: false
+      }
+    },
+    {
+      path: '/user/setting/account/bindemail',
+      name: '绑定邮箱',
+      component: resolve => require(['@/views/user/BindEmailView.vue'], resolve)
+    },
+    {
+      path: '/user/setting/password',
+      name: '密码设置',
+      component: resolve => require(['@/views/user/PasswordView.vue'], resolve),
+      meta: {
+        keepAlive: false
+      }
+    },
+    {
+      path: '/user/setting/password/modifypsd',
+      name: '修改登录密码',
+      component: resolve => require(['@/views/user/ModifyPasswordView.vue'], resolve),
+      meta: {
+        keepAlive: false,
+        requireAuth: true
+      }
+    },
+    {
+      path: '/user/setting/password/modifycash',
+      name: '修改提现密码',
+      component: resolve => require(['@/views/user/ModifyCashPasswordView.vue'], resolve),
+      meta: {
+        keepAlive: false,
+        requireAuth: true
+      }
+    },
+    {
+      path: '/user/setting/about',
+      name: '关于我们',
+      component: resolve => require(['@/views/user/AboutUsView.vue'], resolve),
+      meta: {
+        keepAlive: true
+      }
+    },
+    {
+      path: '/user/setting/agreement',
+      name: '用户协议',
+      component: resolve => require(['@/views/user/AgreementView.vue'], resolve),
+      meta: {
+        keepAlive: true
+      }
+    },
+    {
+      path: '/edit/info',
+      name: '基本信息编辑',
+      component: resolve => require(['@/views/edit/UserInfoEditView.vue'], resolve),
+      meta: {
+        keepAlive: false,
+        requireAuth: true
+      }
+    },
+    {
+      path: '/edit/job',
+      name: '职位意向编辑',
+      component: resolve => require(['@/views/edit/JobEditView.vue'], resolve),
+      meta: {
+        keepAlive: false,
+        requireAuth: true
+      }
+    },
+    {
+      path: '/edit/career',
+      name: '工作经历编辑',
+      component: resolve => require(['@/views/edit/CareerEditView.vue'], resolve),
+      meta: {
+        keepAlive: false,
+        requireAuth: true
+      }
+    },
+    {
+      path: '/edit/project',
+      name: '项目经验编辑',
+      component: resolve => require(['@/views/edit/ProjectEditView.vue'], resolve),
+      meta: {
+        keepAlive: false,
+        requireAuth: true
+      }
+    },
+    {
+      path: '/edit/skill',
+      name: '技能特长编辑',
+      component: resolve => require(['@/views/edit/SkillEditView.vue'], resolve),
+      meta: {
+        keepAlive: false,
+        requireAuth: true
+      }
+    },
+    {
+      path: '/edit/certificate',
+      name: '证书编辑',
+      component: resolve => require(['@/views/edit/CertificateEditView.vue'], resolve),
+      meta: {
+        keepAlive: false,
+        requireAuth: true
+      }
+    },
+    {
+      path: '/edit/train',
+      name: '培训经历编辑',
+      component: resolve => require(['@/views/edit/TrainEditView.vue'], resolve),
+      meta: {
+        keepAlive: false,
+        requireAuth: true
+      }
+    },
+    {
+      path: '/edit/annex',
+      name: '附件编辑',
+      component: resolve => require(['@/views/edit/AnnexEditView.vue'], resolve),
+      meta: {
+        keepAlive: false,
+        requireAuth: true
+      }
+    },
+    {
+      path: '/edit/other',
+      name: '其他编辑',
+      component: resolve => require(['@/views/edit/OtherEditView.vue'], resolve),
+      meta: {
+        keepAlive: false,
+        requireAuth: true
+      }
+    },
+    {
+      path: '/add/edu',
+      name: '教育模块添加',
+      component: resolve => require(['@/views/edit/EduAddView.vue'], resolve),
+      meta: {
+        keepAlive: false,
+        requireAuth: true
+      }
+    },
+    {
+      path: '/edit/offer',
+      name: '教育offer编辑',
+      component: resolve => require(['@/views/edit/OfferEditView.vue'], resolve),
+      meta: {
+        keepAlive: false,
+        requireAuth: true
+      }
+    },
+    {
+      path: '/edit/edu',
+      name: '教育经历编辑',
+      component: resolve => require(['@/views/edit/EduEditView.vue'], resolve),
+      meta: {
+        keepAlive: false,
+        requireAuth: true
+      }
+    },
+    {
+      path: '/account',
+      name: '账户',
+      component: resolve => require(['@/views/account/AccountView.vue'], resolve),
+      meta: {
+        keepAlive: true,
+        requireAuth: true
+      }
+    },
+    {
+      path: '/userinfo/init',
+      name: '基本资料初始化',
+      component: resolve => require(['@/views/login/UserInfoInitView.vue'], resolve),
+      meta: {
+        keepAlive: true,
+        requireAuth: true
+      }
+    },
+    {
+      path: '/recruit/morejob',
+      name: '校招职位',
+      component: resolve => require(['@/views/recruit/MoreJobView.vue'], resolve),
+      meta: {
+        keepAlive: false
+      }
+    },
+    {
+      path: '/recruit/morejob/search',
+      name: '搜索校招职位',
+      component: resolve => require(['@/views/recruit/SearchJobView.vue'], resolve),
+      meta: {
+        keepAlive: false
+      }
+    },
+    {
+      path: '/recruit/morejob/search/city',
+      name: '选择城市',
+      component: resolve => require(['@/views/recruit/SelectCityView.vue'], resolve),
+      meta: {
+        keepAlive: false
+      }
+    },
+    {
+      path: '/recruit/job',
+      name: '职位详情',
+      component: resolve => require(['@/views/recruit/JobDetailView.vue'], resolve),
+      meta: {
+        keepAlive: false
+      }
+    },
+    {
+      path: '/recruit/company',
+      name: '公司详情',
+      component: resolve => require(['@/views/recruit/CompanyDetailView.vue'], resolve),
+      meta: {
+        keepAlive: false
+      }
+    }
+  ]
+})

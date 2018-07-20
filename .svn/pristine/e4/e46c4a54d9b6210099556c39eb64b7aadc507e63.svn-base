@@ -1,0 +1,461 @@
+<template>
+  <div class="recruit-home">
+    <!-- <swiper auto height="180px">
+      <swiper-item class="black"><img width="100%" height="100%" src="http://www.bolego.top/static/img/banner.5365771.jpg"/></swiper-item>
+      <swiper-item class="black"><img width="100%" height="100%" src="http://www.bolego.top/static/test2.jpg"/></swiper-item>
+    </swiper> -->
+    <div class="banner-list">
+        <div class="container">
+          <div class="title-box">
+            <div style="display: inline-block;"><span class="title"></span><span class="title-name">名企</span></div>
+            <router-link to="/recruit/moreco"><span class="more-click">更多 >></span></router-link>
+          </div>
+          <div class="co-logo-list">
+            <ul class="logo-ul">
+            <el-row>
+              <el-col :xs="8" :sm="6" v-for="(companyRecruitValue, index) in companyRecruitValues" :key="index">
+               <li class="cover-li" @click="gotoCompany(index)"><img :src="companyRecruitValue.miniCover"></li>
+              </el-col>
+            </el-row>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="hotjob">
+        <div class="container">
+          <div class="title-box">
+            <div style="display: inline-block;"><span class="title"></span><span class="title-name">热招职位</span></div>
+            <router-link to="/recruit/morehotjob"><span class="more-click">更多 >></span></router-link>
+          </div>
+            <ul>
+          <el-row :gutter="20">
+              <el-col class="release-box" :span="8" v-show="jobRelease">
+                <li>
+                  <span>您居然是第一个发布职位的人<br>快去发布职位吧~</span>
+                  <div style="margin-top: 25px;"><a href="http://company.bolego.top/#/home/campus/postjob"
+                                                    class="release-btn">发布职位</a></div>
+                </li>
+              </el-col>
+              <el-col :xs="24" :sm="8" v-for="(positionValue, index) in positionValues" :key="index">
+                <li>
+                  <h5 @click="gotoDetail(index)">
+                    {{positionValue.positionName}}
+                  </h5>
+                  <p class="tip">
+                    <span class="addr">{{positionValue.workplace}}</span> <span class="jobtype">{{positionValue.jobTypeDivView}}</span>
+                    <span class="invNum">{{positionValue.recruitNumber}}人</span>
+                  </p>
+                  <p class="comname">{{positionValue.compyName}}</p>
+                </li>
+              </el-col>
+          </el-row>
+            </ul>
+        </div>
+      </div>
+      <div class="pubz">
+        <div class="container">
+          <div class="title-box">
+            <div style="display: inline-block;"><span class="title"></span><span class="title-name">宣讲会</span></div>
+            <router-link to="/recruit/morecareertalk"><span class="more-click">更多 >></span></router-link>
+          </div>
+            <ul>
+          <el-row :gutter="20">
+              <el-col :span="12" v-show="arrangRelease">
+                <li>
+                  <span>没有新的宣讲会发布</span>
+                  <div style="margin-top: 25px;"><a href="http://company.bolego.top/#/home/campus" class="release-btn">发布宣讲会</a>
+                  </div>
+                </li>
+              </el-col>
+              <el-col :xs="24" :sm="12" v-for="(arrangeValue, index) in arrangeValues" :key="index">
+                <li>
+                  <h5>
+                    <span class="hot"><span>{{arrangeValue.companyName}}</span>2018校园招聘</span>
+                  </h5>
+                  <p class="tip">
+                    <span class="addr">{{arrangeValue.school}}</span>
+                  </p>
+                  <p class="tip">
+                    <span class="time">{{arrangeValue.startTimestamp}}</span>
+                  </p>
+                  <div class="qr js-qr">
+                    <img src="http://imageats1.quanzhi.cn/images/campus/icon.png" class="icon">
+                    <div class="pop">
+                      <img
+                        src="http://gs.quanzhi.com/user/createqrcode/?url=http://campus.quanzhi.com/company/cscecdz/careertalkshare?careertalkid=2">
+                      <p>扫一扫分享至微信</p>
+                      <span></span>
+                    </div>
+                  </div>
+                </li>
+              </el-col>
+          </el-row>
+            </ul>
+        </div>
+      </div>
+      <div class="clearfix"></div>
+  </div>
+</template>
+
+<script>
+  import { Group, Swiper, SwiperItem, XButton, Cell } from 'vux'
+
+  export default {
+    name: 'recruit-home',
+    components: { Group, Swiper, SwiperItem, XButton, Cell },
+    data() {
+      return {
+        loading: true,
+        arrangRelease: false,
+        jobRelease: false,
+        companyRecruitValues: '',
+        positionValues: '',
+        arrangeValues: '',
+        imgUrl: '',
+        form: {
+          workplace: '',
+          education: '',
+          positionName: '',
+          compyId: '',
+          city: '',
+          companyId: '',
+          school: '',
+          time: '',
+          positionId: '',
+          page: '',
+          size: '6',
+          recruitDiv: '01'
+        }
+      }
+    },
+    created() {
+      this.$emit('setTabbar', true);
+      this.$store.dispatch('getCompanyList', this.form).then(res => {
+        if (res.data.code === '200') {
+          this.companyRecruitValues = res.data.data.companyRecruitValues
+        } else {
+        }
+      })
+      this.$store.dispatch('getHoPosList', this.form).then(res => {
+        if (res.data.code === '200') {
+          this.positionValues = res.data.data.positionValues
+          if (this.positionValues != null && this.positionValues.length === 0) {
+            this.jobRelease = true
+          }
+        } else {
+          this.jobRelease = true
+        }
+      })
+      this.$store.dispatch('getHoArrList', this.form).then(res => {
+        if (res.data.code === '200') {
+          this.arrangeValues = res.data.data.arrangeValues
+          if (this.arrangeValues != null && this.arrangeValues.length === 0) {
+            this.arrangRelease = true
+          }
+        } else {
+          this.arrangRelease = true
+        }
+        this.loading = false
+      })
+    },
+    methods: {
+      gotoCompany: function (index) {
+        this.form.compyId = this.companyRecruitValues[index].compyId
+        this.$router.push({
+          path: '/recruit/company',
+          query: {compyId: this.companyRecruitValues[index].compyId}
+        })
+      },
+      gotoDetail: function (index) {
+        this.form.positionId = this.positionValues[index].positionId
+        this.$router.push({
+          path: '/recruit/job',
+          query: {positionId: this.positionValues[index].positionId}
+        })
+      }
+    }
+  }
+</script>
+
+<style scoped>
+  body{
+    background-color: #f0f4f7 !important;
+  }
+  .recruit-home{
+    background: #FFF;
+  }
+  .release-box {
+    text-align: center;
+  }
+
+  .release-btn {
+    padding: 8px;
+    background-color: #D86370;
+    color: #FFFFFF;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .banner img {
+    display: block;
+    margin: 30px auto 0;
+  }
+
+  .banner-list ul {
+    margin: 0;
+    background: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+  }
+
+  ul, ol {
+    list-style: none;
+  }
+  .logo-ul{
+      padding: 0px
+  }
+  .banner-list .cover-li {
+    padding: 10px;
+    cursor: pointer;
+  }
+
+  .banner-list .cover-li img {
+    width: 100%;
+    height: 60px;
+  }
+
+  .container {
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .hotjob .hgroup, .pubz .hgroup {
+    line-height: 30px;
+    height: 30px;
+    padding: 15px 10px 15px 10px;
+    background: url(http://cssats1.quanzhi.cn/images/campus/icon-hg.png) left center no-repeat;
+  }
+
+  .hotjob h4 {
+    background: url(http://cssats1.quanzhi.cn/images/campus/icon-hj.png) left center no-repeat;
+  }
+
+  .hotjob .hgroup h4, .pubz .hgroup h4 {
+    float: left;
+    font-size: 16px;
+    font-weight: 400;
+    padding-left: 32px;
+    margin: 0px;
+  }
+
+  .hotjob .hgroup .circle, .pubz .hgroup .circle {
+    float: right;
+    color: #379363;
+    padding-left: 18px;
+    background: url(http://cssats1.quanzhi.cn/images/icon-reload.png) left center no-repeat;
+  }
+
+  .hotjob ul {
+    padding: 0px;
+    margin: 0px;
+    clear: both;
+  }
+
+  .hotjob li {
+    padding: 15px 15px 0;
+    margin-bottom: 20px;
+    background: #FFF;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .hotjob li:hover {
+    -webkit-box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .hotjob .tip {
+    color: #666;
+    line-height: 32px;
+    margin: 0;
+    padding: 0;
+  }
+
+  .hotjob .tip span {
+    padding-left: 20px;
+    margin-right: 20px;
+    font-size: 14px;
+  }
+
+  .hotjob .comname {
+    line-height: 42px;
+    border-top: 1px dashed #ddd;
+    font-size: 12px;
+    margin: 0px;
+    margin-top: 10px;
+  }
+
+  .jobtype {
+    background: url(http://cssats1.quanzhi.cn/images/campus/ji-grey.png) left center no-repeat;
+  }
+
+  .invNum {
+    margin-right: 0;
+    background: url(http://cssats1.quanzhi.cn/images/campus/in-grey.png) left center no-repeat;
+  }
+
+  .hotjob h5 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px;
+    padding-right: 25px;
+    margin: 0px;
+    display: inline-block;
+    cursor: pointer;
+  }
+
+  .hotjob h5:hover {
+    color: #D86370;
+  }
+
+  h5, .hotjob h5 a {
+    color: #333;
+  }
+
+  .hotjob h5 a:hover {
+    color: #379363;
+  }
+
+  a {
+    text-decoration: none !important;
+  }
+
+  .pubz h4 {
+    background: url(http://cssats1.quanzhi.cn/images/campus/icon-pubz.png) left center no-repeat;
+  }
+
+  .pubz h5 {
+    font-size: 14px;
+    padding-right: 25px;
+  }
+
+  .pubz h5 a.hot, .pubz h5 span.hot {
+    padding: 5px 25px 5px 0;
+    background: url(http://cssats1.quanzhi.cn/images/campus/hot.png) right top no-repeat;
+  }
+
+  .pubz .tip {
+    line-height: 25px;
+    color: #666;
+    margin: 0;
+    padding: 0;
+    font-size: 12px;
+  }
+
+  .pubz ul {
+    margin-top: 0px;
+    padding-left: 0px;
+    clear: both;
+  }
+
+  .pubz li {
+    position: relative;
+    padding: 15px;
+    margin-bottom: 20px;
+    background: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .pubz li:hover {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .pubz .tip span {
+    padding-left: 20px;
+    margin-right: 14px;
+  }
+
+  .addr {
+    background: url(http://cssats1.quanzhi.cn/images/campus/addr-grey.png) left center no-repeat;
+  }
+
+  .pubz .tip .time {
+    background: url(http://cssats1.quanzhi.cn/images/campus/clock-grey.png) left center no-repeat;
+  }
+
+  .pubz .qr {
+    z-index: 2000;
+    position: absolute;
+    right: 15px;
+    top: 30px;
+  }
+
+  .pubz .qr .pop {
+    display: none;
+    background: #fff;
+    position: absolute;
+    width: 120px;
+    line-height: 32px;
+    font-size: 12px;
+    color: #666;
+    top: -162px;
+    left: -46px;
+    border-radius: 3px;
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+    text-align: center;
+  }
+
+  .pubz .qr .pop img {
+    display: block;
+    width: 100px;
+    padding: 10px 10px 0;
+  }
+
+  .pubz .qr .pop span {
+    position: absolute;
+    width: 16px;
+    height: 9px;
+    left: 52px;
+    bottom: -9px;
+    background: url(http://cssats1.quanzhi.cn/images/sub-shadow.png);
+  }
+
+  .pubz .qr .pop p {
+    margin: 0px;
+  }
+
+  /** more */
+  .banner{
+  }
+
+  .banner-list{
+    /* margin-top: -64px; */
+  }
+
+  
+  .title-box{
+    font-size: 14px;
+    margin: 10px 0 !important;
+  }
+
+  .title-box .title {
+    display: block;
+    width: 8px;
+    height: 24px;
+    float: left;
+    background-color: #D86370;
+    margin-right: 6px;
+  }
+
+  .more-click {
+    display: inline-block;
+    float: right;
+    color: #D86370;
+  }
+  .clearfix{
+    clear: both;
+  }
+</style>
+

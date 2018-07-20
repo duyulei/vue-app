@@ -1,0 +1,234 @@
+<template>
+  <div class="user-info-edit" v-if="isLoading">
+    <x-header class="header" :left-options="{backText: ''}">基本资料</x-header>
+    <div class="user-header">
+        <el-upload
+          class="avatar-uploader"
+          action="https://www.t021.top/bolego/file/upload"
+          :show-file-list="false"
+          :on-success="handleAvatarSuccess"
+          :before-upload="beforeAvatarUpload">
+          <img v-if="headAddr" width="100%" height="100%" :src="headAddr" class="avatar">
+          <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+          <div class="el-upload__tip" slot="tip">只能上传jpg/png文件，且不超过5MB</div>
+        </el-upload>
+    </div>
+    <group>
+        <x-input class="user-defined" title="姓名" v-model="nameForm.realName" placeholder="请填写姓名"></x-input>
+        <popup-radio class="user-defined" title="性别" :options="sexs" v-model="nameForm.gender" placeholder="请选择性别"></popup-radio>
+        <datetime class="user-defined" title="出生" :min-year='1900' v-model="infoForm.birthday" placeholder="请选择生日"></datetime>
+    </group>
+    <group class="basic-info">
+        <popup-picker class="user-defined" title="城市" :data="list" :columns="2" v-model="cityCodes" @on-change="onChange" show-name placeholder="请选择城市"></popup-picker>
+        <x-input class="user-defined" title="邮箱" v-model="infoForm.email" placeholder="请填写邮箱"></x-input>
+        <x-input title="身高" v-model="infoForm.height" placeholder="请填写身高"></x-input>
+        <x-input title="民族" v-model="infoForm.nation" placeholder="请填写民族"></x-input>
+        <popup-radio title="政治面貌" :options="politicType" v-model="infoForm.politicsStatus" placeholder="请选择政治面貌"></popup-radio>
+        <popup-radio title="婚姻状况" :options="marryType" v-model="infoForm.marriageDiv" placeholder="请选择婚姻状况"></popup-radio>
+        <cell title="手机" :value="mobileNo"></cell>
+        <x-input title="QQ" v-model="infoForm.qqNo" placeholder="请填写QQ号"></x-input>
+        <x-input title="微信" v-model="infoForm.weCharNo" placeholder="请填写微信号"></x-input>
+    </group>
+    <x-button class="basic-btn" type="warn" @click.native="save">保存</x-button>
+  </div>
+</template>
+
+<script>
+  import { Cell, Group, XInput, PopupRadio, Datetime, XAddress, XButton, PopupPicker, XHeader } from 'vux'
+
+  export default {
+    name: 'user-info-edit',
+    components: { Cell, Group, XInput, PopupRadio, Datetime, XAddress, XButton, PopupPicker, XHeader },
+    data() {
+      return {
+        isLoading: true,
+        mobileNo: '',
+        headAddr: '',
+        dicResourceList: '',
+        list: [],
+        cityCodes: [],
+        sexs: [{key: '01', value: '男'}, {key: '02', value: '女'}],
+        politicType: [{key: '01', value: '党员'}, {key: '02', value: '团员'}, {key: '03', value: '群众'}],
+        marryType: [{key: '03', value: '-请选择-'}, {key: '01', value: '未婚'}, {key: '02', value: '已婚'}],
+        nameForm: {
+          gender: '',
+          realName: ''
+        },
+        infoForm: {
+          birthday: '',
+          cityCode: '',
+          email: '',
+          height: '',
+          nation: '',
+          marriageDiv: '',
+          politicsStatus: '',
+          qqNo: '',
+          weCharNo: ''
+        },
+        headUrl: ''
+      }
+    },
+    created: function () {
+      console.log(this.$store.state.resume.resume.basicInfoValue)
+      this.headAddr = this.$store.state.resume.resume.basicInfoValue.headAddr
+      this.mobileNo = this.$store.state.resume.resume.basicInfoValue.mobileNo
+      this.cityCodes = this.$store.state.resume.resume.basicInfoValue.cityCodes
+      this.nameForm.realName = this.$store.state.resume.resume.basicInfoValue.realName
+      this.nameForm.gender = this.$store.state.resume.resume.basicInfoValue.gender
+      this.infoForm.birthday = this.$store.state.resume.resume.basicInfoValue.birthday
+      this.infoForm.cityCode = this.$store.state.resume.resume.basicInfoValue.cityCode
+      this.infoForm.email = this.$store.state.resume.resume.basicInfoValue.email
+      this.infoForm.height = this.$store.state.resume.resume.basicInfoValue.height ? this.$store.state.resume.resume.basicInfoValue.height : ''
+      this.infoForm.nation = this.$store.state.resume.resume.basicInfoValue.nation
+      this.infoForm.marriageDiv = this.$store.state.resume.resume.basicInfoValue.marriageDiv
+      this.infoForm.politicsStatus = this.$store.state.resume.resume.basicInfoValue.politicsStatus
+      this.infoForm.qqNo = this.$store.state.resume.resume.basicInfoValue.qqNo
+      this.infoForm.weCharNo = this.$store.state.resume.resume.basicInfoValue.weCharNo
+      if (this.cityCodes[1]){
+        this.infoForm.cityCode = this.cityCodes[1]
+      } else {
+        this.infoForm.cityCode = ''
+      }
+      this.$store.dispatch('getResource').then(res => {
+        if (res.data.code === '200') {
+          this.dicResourceList = res.data.data.dicResourceList
+          var arr = []
+          for (var i = 0; i < this.dicResourceList.length; i++) {
+            var objParent = {}
+            objParent.name = this.dicResourceList[i].resourceName
+            objParent.value = this.dicResourceList[i].resourceCode
+            objParent.parent = 0
+            arr.push(objParent)
+            if (this.dicResourceList[i].children) {
+              for (var j = 0; j < this.dicResourceList[i].children.length; j++) {
+                var obj = {}
+                obj.name = this.dicResourceList[i].children[j].resourceName
+                obj.value = this.dicResourceList[i].children[j].resourceCode
+                obj.parent = this.dicResourceList[i].resourceCode
+                arr.push(obj)
+              }
+            }
+          }
+          this.list = arr
+        } else {
+          this.$vux.toast.text(res.data.message)
+        }
+      })
+    },
+    methods: {
+      save: function () {
+        this.$store.dispatch('editUserName', this.nameForm).then(res => {
+          console.log(res)
+          if (res.data.code === '200') {
+            this.$store.dispatch('editUserInfo', this.infoForm).then(res => {
+              console.log(res)
+              if (res.data.code === '200') {
+                this.$store.dispatch('editHeader', this.headUrl).then(res => {
+                  console.log(res)
+                  if (res.data.code === '200') {
+                    this.isLoading = true
+                    this.$router.go(-1)
+                  } else {
+                    this.$router.go(-1)
+                  }
+                })
+              } else {
+                this.$vux.toast.text(res.data.message)
+              }
+            })
+          } else {
+            this.$vux.toast.text(res.data.message)
+          }
+        })
+      },
+      onChange () {
+        this.infoForm.cityCode = this.cityCodes[1]
+      },
+      handleAvatarSuccess (res, file) {
+        this.headAddr = file.url
+        this.headUrl = res.data.fileUrl
+      },
+      beforeAvatarUpload (file) {
+        const isLt5M = file.size / 1024 / 1024 < 5
+
+        if (!isLt5M) {
+          this.$vux.toast.text('上传头像图片大小不能超过 5MB!')
+        }
+        return isLt5M
+      }
+    }
+  }
+</script>
+
+<style scoped>
+.user-info-edit{
+    background: #f1f1f1;
+    padding-top: 45px;
+    padding-bottom: 40px;
+}
+.user-header{
+    padding: 10px 0;
+    margin: 10px 0;
+    background: #fff;
+}
+.basic-info{
+    padding-bottom: 40px;
+}
+.basic-btn{
+    position: fixed;
+    bottom: 0;
+    border-radius: 0;
+}
+.weui-btn_warn{
+  background: #D86471;
+}
+.avatar-uploader {
+  text-align: center;
+}
+.avatar-uploader .el-upload {
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.avatar,.avatar-uploader-icon {
+  display: block;
+  font-size: 28px;
+  color: #8c939d;
+  text-align: center;
+  width: 90px;
+  height: 90px;
+  margin: 0 auto;
+  line-height: 80px;
+  border-radius: 50%;
+  border: 5px solid #f1f1f1;
+  box-shadow: 0 0 10px;
+}
+.header{
+  background: #d86372;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+}
+</style>
+<style>
+.user-info-edit .weui-input{
+    text-align: right;
+  }
+  .header.vux-header .vux-header-left .left-arrow:before {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #fff;
+    border-width: 1px 0 0 1px;
+    -webkit-transform: rotate(315deg);
+    transform: rotate(315deg);
+    top: 8px;
+    left: 7px;
+  }
+</style>
+

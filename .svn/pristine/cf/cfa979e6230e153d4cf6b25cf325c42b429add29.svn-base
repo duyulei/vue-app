@@ -1,0 +1,244 @@
+import axios from 'axios'
+
+export default {
+  state: {
+    retrieve: {
+      phone: '',
+      imageCaptcha: '',
+      phoneCaptcha: ''
+    }
+  },
+  mutations: {
+    setAccountToken (state, accountToken) {
+      localStorage.setItem('accountToken', accountToken)
+    },
+    clearAccountToken (state) {
+      localStorage.clear('accountToken')
+    }
+  },
+  actions: {
+    getAccountToken ({commit}) {
+      localStorage.getItem('accountToken')
+    },
+    login ({commit}, form) {
+      return new Promise((resolve, reject) => {
+        axios({
+          url: '/user/login',
+          method: 'post',
+          data: {
+            userLoginName: form.phone,
+            userLoginPassword: form.password,
+            captcha: form.captcha
+          },
+          transformRequest: [function (data) {
+            // Do whatever you want to transform the data
+            let ret = ''
+            for (let it in data) {
+              ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+            }
+            return ret
+          }],
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+          }
+        }).then(function (response) {
+          if (response.data.code === '200') {
+            commit('setAccountToken', response.data.data.accountToken)
+          }
+          resolve(response)
+        }).catch(function (response) {
+          reject(response)
+        })
+      })
+    },
+    resetUserPassword ({commit}, form) {
+      return new Promise((resolve, reject) => {
+        axios({
+          url: '/user/pwd/back',
+          method: 'post',
+          data: {
+            loginName: form.phone,
+            password: form.newPassword,
+            confirmPassword: form.rePassword,
+            captcha: form.imageCaptcha,
+            mobileCaptcha: form.phoneCaptcha
+          },
+          transformRequest: [function (data) {
+            // Do whatever you want to transform the data
+            let ret = ''
+            for (let it in data) {
+              ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+            }
+            return ret
+          }],
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+          }
+        }).then(function (response) {
+          if (response.data.code === '200') {
+          }
+          resolve(response)
+        }).catch(function (response) {
+          reject(response)
+        })
+      })
+    },
+    getUserInfo ({commit}, form) {
+      return new Promise((resolve, reject) => {
+        axios({
+          url: '/user/info',
+          method: 'post',
+          data: {
+          },
+          transformRequest: [function (data) {
+            // Do whatever you want to transform the data
+            let ret = ''
+            for (let it in data) {
+              ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+            }
+            return ret
+          }],
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+          }
+        }).then(function (response) {
+          if (response.data.code === '200') {
+          }
+          resolve(response)
+        }).catch(function (response) {
+          reject(response)
+        })
+      })
+    },
+    regist ({commit}, form) {
+      return new Promise((resolve, reject) => {
+        axios({
+          url: '/mobile/regist',
+          method: 'post',
+          data: {
+            loginName: form.phone,
+            password: form.newPassword,
+            confirmPassword: form.rePassword,
+            captcha: form.imageCaptcha,
+            mobileCaptcha: form.phoneCaptcha
+          },
+          transformRequest: [function (data) {
+            // Do whatever you want to transform the data
+            let ret = ''
+            for (let it in data) {
+              ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+            }
+            return ret
+          }],
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+          }
+        }).then(function (response) {
+          if (response.data.code === '200') {
+            commit('setAccountToken', response.data.data.accountToken)
+          }
+          resolve(response)
+        }).catch(function (response) {
+          reject(response)
+        })
+      })
+    },
+    wechatBind ({commit}, form) {
+      return new Promise((resolve, reject) => {
+        axios({
+          url: '/bind/wechat',
+          method: 'post',
+          data: {
+            phoneNum: form.phone,
+            captcha: form.phoneCaptcha,
+            unionid: form.unionid
+          },
+          transformRequest: [function (data) {
+            // Do whatever you want to transform the data
+            let ret = ''
+            for (let it in data) {
+              ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+            }
+            return ret
+          }],
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+          }
+        }).then(function (response) {
+          if (response.data.code === '200') {
+            commit('setAccountToken', response.data.data)
+          }
+          resolve(response)
+        }).catch(function (response) {
+          reject(response)
+        })
+      })
+    },
+    initUserInfo ({commit}, form) {
+      return new Promise((resolve, reject) => {
+        axios({
+          url: '/resume/basic/info/add',
+          method: 'post',
+          data: {
+            birthday: form.birthday,
+            cityCode: form.cityCode,
+            email: form.email,
+            height: form.height,
+            nation: form.nation,
+            marriageDiv: form.marriageDiv,
+            politicsStatus: form.politicsStatus,
+            qqNo: form.qqNo,
+            weCharNo: form.weCharNo,
+            gender: form.gender,
+            realName: form.realName,
+            workState: form.workState,
+            headAddr: form.headAddr
+          },
+          transformRequest: [function (data) {
+            // Do whatever you want to transform the data
+            let ret = ''
+            for (let it in data) {
+              ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+            }
+            return ret
+          }],
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+          }
+        }).then(function (response) {
+          if (response.data.code === '200') {
+          }
+          resolve(response)
+        }).catch(function (response) {
+          reject(response)
+        })
+      })
+    },
+    checkLoginCaptchaShow ({commit}) {
+      return new Promise((resolve, reject) => {
+        axios({
+          url: '/check/login/captcha/show',
+          method: 'post',
+          data: {},
+          transformRequest: [function (data) {
+            // Do whatever you want to transform the data
+            let ret = ''
+            for (let it in data) {
+              ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+            }
+            return ret
+          }],
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+          }
+        }).then(function (response) {
+          if (response.data.code === '200') {
+          }
+          resolve(response)
+        }).catch(function (response) {
+          reject(response)
+        })
+      })
+    }
+  }
+}

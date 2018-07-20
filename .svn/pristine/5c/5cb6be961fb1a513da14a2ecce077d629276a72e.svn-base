@@ -1,0 +1,293 @@
+<template>
+  <div class="mroe-career-talk" v-loading.body="loading">
+    <scroller 
+      :on-refresh="refresh"
+      :on-infinite="infinite">
+      <!-- content goes here -->
+      <div>
+      <div class="title-input">
+        <el-input v-model="form.positionName" placeholder="请输入职位名称">
+          <el-button class="btn-search" slot="append" @click="search">搜索</el-button>
+        </el-input>
+      </div>
+      <div class="select-box" v-if="!isMore">
+        <img @click="isMore = true" width="20px" src="../../assets/more.png"/>
+  	  </div>
+      <el-row class="more-select" v-if="isMore">
+          <el-col :xs="12">
+            <li class="select-li select-margin">
+              <div class="title-input-l">
+                  <el-select v-model="form.workplace" placeholder="请选择城市" :clearable="true">
+                    <el-option
+                      v-for="item in workplaces"
+                      :key="item"
+                      :label="item"
+                      :value="item">
+                    </el-option>
+                  </el-select>
+              </div>
+            </li>
+          </el-col>
+          <el-col :xs="12">
+            <li class="select-li select-margin">
+              <div class="title-input-r">
+                <el-select class="title-content" v-model="form.education" placeholder="请选择学历" :clearable="true">
+                    <el-option
+                      v-for="item in eduResourceList"
+                      :key="item.resourceCode"
+                      :label="item.resourceName"
+                      :value="item.resourceName">
+                    </el-option>
+                </el-select>
+              </div>
+            </li>
+          </el-col>
+      </el-row>
+    </div>
+    <div class="more-next">
+  	<div class="career-talk-box" style="display: inline-block;width: 100%;"  v-for="(positionValue, index) in positionValues">
+  		<div class="list-content" @click="gotoDetail(index)">
+  			<div class="job-title">
+  				<span class="job-name">{{positionValue.positionName}}</span>
+  				<span class="co-name">{{positionValue.time}}</span>
+  			</div>
+        <div class="job-title">
+  				<span class="com-name">{{positionValue.compyName}}</span>
+  			</div>
+  			<div class="ul-box">
+  				<ul>
+  					<li class="select-li select-margin"><span class="title-icon"><i class="icon iconfont icon-weizhi"></i></span><span class="title-name">{{positionValue.workplace}}</span></li>
+  					<li class="select-li select-margin"><span class="title-icon"><i class="icon iconfont icon-jinlingyingcaiwangtubiao28"></i></span><span class="title-name">{{positionValue.jobTypeDivView}}</span></li>
+  					<li class="select-li select-margin"><span class="title-icon"><i class="icon iconfont icon-weibiaoti--"></i></span><span class="title-name">{{positionValue.recruitNumber}}人</span></li>
+  					<li class="select-li select-margin"><span class="title-icon"><i class="icon iconfont icon-xueli"></i></span><span class="title-name">{{positionValue.education}}</span></li>
+  					<li class="select-li select-margin title-time-box"><span class="title-salary">{{positionValue.salary}}K</span></li>
+  				</ul>
+  			</div>
+        <img class="go-icon" width="20px" src="../../assets/go.png"/>
+  		</div>
+   </div>
+   </div>
+    </scroller>
+  </div>
+</template>
+
+<script>
+  export default {
+    name: 'mroe-career-talk',
+    data () {
+      return {
+        loading: true,
+        isMore: false,
+        positionValues: [],
+        workplaces: '',
+        eduResourceList: '',
+        totalPages: '',
+        form: {
+          positionId: '',
+          workplace: '',
+          education: '',
+          positionName: '',
+          more: '01',
+          page: '',
+          size: '6',
+          recruitDiv: '01'
+        }
+      }
+    },
+    created () {
+      this.init()
+    },
+    methods: {
+      pageChange: function (page) {
+        this.form.page = page - 1
+        this.init()
+      },
+      init: function () {
+        this.$store.dispatch('getHoPosList', this.form).then(res => {
+          if (res.data.code === '200') {
+            this.positionValues = this.positionValues.concat(res.data.data.positionValues)
+            this.workplaces = res.data.data.workplaces
+            this.totalPages = res.data.data.totalPages
+          } else {
+          }
+          this.loading = false
+        })
+        this.$store.dispatch('getResource', this.form).then(res => {
+          if (res.data.code === '200') {
+            this.eduResourceList = res.data.data.eduResourceList
+          }
+        })
+      },
+      gotoDetail: function (index) {
+        this.form.positionId = this.positionValues[index].positionId
+        this.$router.push({
+          path: '/recruit/job',
+          query: {positionId: this.positionValues[index].positionId}
+        })
+      },
+      search: function () {
+        this.loading = true
+        this.refresh()
+      },
+      refresh: function (done) {
+        console.log('refresh')
+        setTimeout(() => {
+          this.form.page = 0
+          this.positionValues = []
+          this.init()
+          done(true)
+        }, 1500)
+      },
+      infinite: function (done) {
+        let _this = this
+        console.log('infinite called..')
+        if (this.form.page === this.totalPages || this.totalPages === 0) {
+          setTimeout(() => {
+            done(true)
+          }, 1500)
+          return;
+        }
+        setTimeout(() => {
+          _this.form.page ++
+          _this.init()
+          done()
+        }, 1500)
+      }
+    }
+  }
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+ .mroe-career-talk {
+    height: 100%;
+ }
+ 
+ .job-title {
+  	margin: 10px 0 0;
+  	color: #6B6B6B;
+  }
+ 
+ .job-title .job-name {
+    margin-left: 20px;
+    font-size: 14px;
+    color: #D86370;
+    width: 170px;
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+ }
+ .job-title .com-name {
+   margin-left: 20px;
+   font-size: 12px;
+ }
+ 
+ .job-title .co-name {
+ 	display: inline-block;
+ 	float: right;
+  margin: 3px 20px 0 0;
+  font-size: 13px;
+ }
+ 
+ .list-content {
+    display: inline-block;
+    width: 100%;
+    background-color: #FFF;
+    border-top: 1px solid #F0F4F7;
+    border-bottom: 1px solid #F0F4F7;
+ }
+ .more-next{
+   margin-top: 15px;
+ }
+ .career-talk-box{
+   position: relative;
+ }
+ .go-icon{
+   position: absolute;
+   right: 15px;
+   top: 45%;
+ }
+ .list-content:hover {
+    background-color: #f1f1f1;
+    cursor: pointer;
+ }
+ .btn-search{
+   background: #d86372 !important;
+    color: #fff !important;
+    border-radius: 0;
+ }
+ .ul-box {
+ 	margin-left: 20px;
+ }
+ 
+ .list-content .select-li {
+    height: 30px;
+    line-height: 30px;
+    width: auto;
+    font-size: 12px;
+    margin-right: 15px;
+    color: #AAA;
+    display: block;
+    float: left;
+ }
+ 	.list-content .title-time-box {
+ 		float: right !important;
+ 		width: auto;
+    margin-right: 20px;
+    font-size: 12px;
+ 	}
+  .list-content .select-li .title-name {
+  	margin-left: 3px;
+  }
+  .list-content .select-li .title-salary {
+  	font-size: 14px;
+    color:#D86370;
+  }
+ 
+ .title-input {
+ 	padding: 10px 20px;
+ }
+ .title-input-l{
+   padding: 0 10px 0 20px;
+ }
+ .title-input-r{
+   padding: 0 20px 0 10px;
+ }
+ 
+ .no-content{
+   text-align: center;
+   font-size: 14px;
+   margin: 30px 10px 0;
+ }
+.page-box {
+	text-align: center;
+	margin: 20px 0px;
+}
+li{
+  list-style-type: none;
+}
+.more-select{
+  margin: 10px 0;
+}
+.select-box{
+  text-align: center;
+  background: #f8f8f8;
+  height: 17px;
+}
+</style>
+
+<style>
+  .el-select{
+    width:100% !important;
+  }
+.el-pager li.active {
+  border-color: #D86370;
+  background-color: #D86370;
+  cursor: pointer;
+}
+.el-pager li:hover {
+  border-color: #9C1826;
+  background-color: #9C1826;
+}
+</style>

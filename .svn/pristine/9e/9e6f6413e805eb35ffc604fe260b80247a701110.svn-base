@@ -1,0 +1,171 @@
+<template>
+  <div class="home-view">
+    <div class="item-card campus" @click="goCampus">
+      <div class="item-content">
+        <div class="img">
+          <img src="../../assets/home_campus.png" height="50" width="50"/>
+        </div>
+        <span>校园招聘</span>
+        <i class="iconfont icon-jiantou2"></i>
+      </div>
+    </div>
+    <div class="item-card chengdu">
+      <div class="item-content">
+        <div class="img">
+          <img src="../../assets/home_chengdu.png" height="35" width="35"/>
+        </div>
+        <span>全职招聘</span>
+        <i class="iconfont icon-jiantou2"></i>
+      </div>
+    </div>
+    <div class="item-card resume">
+      <div class="item-content">
+        <div class="img">
+          <img src="../../assets/home_resume.png" height="45" width="45"/>
+        </div>
+        <span>实习/兼职</span>
+        <i class="iconfont icon-jiantou2"></i>
+      </div>
+    </div>
+    <div class="item-card resume">
+      <div class="item-content">
+        <div class="img">
+          <img src="../../assets/home_campus.png" height="45" width="45"/>
+        </div>
+        <span>招募合伙人</span>
+        <i class="iconfont icon-jiantou2"></i>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  import {XButton} from 'vux'
+  import axios from 'axios'
+
+  export default {
+    name: 'home-view',
+    components: {XButton},
+    data() {
+      return {}
+    },
+    created: function () {},
+    methods: {
+      goCampus: function () {
+        this.$router.push({path: '/recruit/morejob'})
+      },
+      goChengdu: function () {
+        if (localStorage.getItem('accountToken')) {
+          window.location.href = 'http://home.cdcyl.ol.cc/web-sys-inn'
+        } else {
+          var ua = navigator.userAgent.toLowerCase();
+          console.log(ua)
+          if (ua.match(/MicroMessenger/i)) {
+            console.log(this.$route.path)
+            axios({
+              url: '/get/authorizationUrl',
+              method: 'post',
+              data: {
+                redirectUri: this.$route.path
+              },
+              transformRequest: [function (data) {
+                let ret = ''
+                for (let it in data) {
+                  ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+                }
+                return ret
+              }],
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+              }
+            }).then(function (response) {
+              if (response.data.code === '200') {
+                console.log(response.data.data)
+                window.location.href = response.data.data
+              }
+            })
+          } else {
+            this.$router.push({path: '/login'})
+          }
+        }
+      },
+      goResumeView: function () {
+        this.$router.push({path: '/resume'})
+      }
+    }
+  }
+</script>
+
+<style scoped>
+  .home-view {
+    background-color: #FFF;
+    padding: 20px;
+  }
+
+  .item-card {
+    width: 100%;
+    height: 125px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .item-card .item-content {
+    display: flex;
+    align-items: center;
+  }
+
+  .item-card .item-content .img {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .item-card .item-content span {
+    width: 120px;
+    font-size: 21px;
+    margin: 0 30px 0 15px;
+  }
+
+  .campus {
+    background: url("../../assets/home_bg1.png") no-repeat;
+    background-size: 100% 125px;
+    box-shadow: 2px 2px 10px 1px #d86372;
+    border-radius: 10px;
+  }
+
+  .chengdu {
+    background: url("../../assets/home_bg2.png") no-repeat;
+    background-size: 100% 125px;
+    box-shadow: 2px 2px 10px 1px #d86372;
+    border-radius: 10px;
+  }
+
+  .resume {
+    background: url("../../assets/home_bg3.png") no-repeat;
+    background-size: 100% 125px;
+    box-shadow: 2px 2px 10px 1px #d86372;
+    border-radius: 10px;
+  }
+
+  .setting {
+    background: url("../../assets/home_bg3.png") no-repeat;
+    background-size: 100% 125px;
+  }
+
+  .home-view .item-card:not(:first-child) {
+    margin-top: 20px
+  }
+
+  .weui-btn_default {
+    width: 200px;
+    color: #D86471;
+    border: 1px solid #D86471;
+    border-radius: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+</style>

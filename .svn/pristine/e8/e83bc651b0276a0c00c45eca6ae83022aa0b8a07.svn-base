@@ -1,0 +1,197 @@
+<template>
+  <div class="reset-phone-two-view">
+    <x-header class="header" :left-options="{backText: ''}">确认更换邮箱</x-header>
+    <div>
+      <group class="input-group">
+        <x-input type="tel" v-model="form.email" placeholder="输入新邮箱号">
+        </x-input>
+        <x-input placeholder="邮箱验证码" v-model="form.phoneCaptcha">
+          <a slot="right" class="btn-input-captcha" @click="showImageDialog()">
+            {{phoneCaptchaBtn.disabled ?
+            phoneCaptchaBtn.time+'s':'获取验证码'}}
+          </a>
+        </x-input>
+      </group>
+    </div>
+    <x-button class="primary-red" type="primary" style="margin-top: 20px;" @click.native="submit">提交</x-button>
+    <x-dialog v-model="showToast" hide-on-blur class="dialog">
+      <x-input v-model.trim="form.imageCaptcha" placeholder="图片验证码">
+        <img @click="reloadCaptcha()" slot="right" class="weui-vcode-img" :src="captcha">
+      </x-input>
+      <x-button class="primary-red" mini type="primary" style="margin-top: 20px;" @click.native="submitImageCaptcha">提交
+      </x-button>
+    </x-dialog>
+  </div>
+</template>
+
+<script>
+  import {XInput, Group, XButton, Cell, Flexbox, XDialog, XHeader} from 'vux'
+  import axios from 'axios'
+
+  export default {
+    name: 'reset-phone-two-view',
+    components: {
+      XInput,
+      XButton,
+      Group,
+      Cell,
+      Flexbox,
+      XDialog,
+      XHeader
+    },
+    data() {
+      return {
+        captcha: '',
+        form: {
+          oldEmail: '',
+          oldPhoneCaptcha: '',
+          email: '',
+          phoneCaptcha: '',
+          imageCaptcha: ''
+        },
+        phoneCaptchaBtn: {
+          disabled: false,
+          time: 0
+        },
+        showToast: false
+      }
+    },
+    created() {
+      if (this.$route.query.email) {
+        this.form.oldEmail = this.$route.query.email
+      } else {
+        this.$router.go(-1)
+      }
+      if (this.$route.query.phoneCaptcha) {
+        this.form.oldPhoneCaptcha = this.$route.query.phoneCaptcha
+      } else {
+        this.$router.go(-1)
+      }
+    },
+    methods: {
+      reloadCaptcha: function () {
+        this.captcha = axios.defaults.baseURL + '/captcha/image/get?phoneNum=' + this.form.email + '&t=' + new Date()
+      },
+      showImageDialog: function () {
+        if (!this.form.email) {
+          this.$vux.toast.text('请输入邮箱号')
+          return
+        }
+        this.showToast = true
+        this.reloadCaptcha()
+      },
+      submitImageCaptcha: function () {
+        this.showToast = false
+        this.loadPhoneCaptcha();
+      },
+      loadPhoneCaptcha: function () {
+        if (this.phoneCaptchaBtn.disabled) {
+          return
+        }
+        this.$store.dispatch('getEmailCaptcha', this.form).then(res => {
+          console.log(res)
+          if (res.data.code === '200') {
+            this.phoneCaptchaBtn.disabled = true
+            this.phoneCaptchaBtn.time = 60
+            this.timer()
+          } else {
+            this.$vux.toast.text(res.data.message)
+          }
+        })
+      },
+      timer: function () {
+        if (this.phoneCaptchaBtn.time > 0) {
+          this.phoneCaptchaBtn.time--
+          setTimeout(this.timer, 1000)
+        } else {
+          this.phoneCaptchaBtn.disabled = false
+        }
+      },
+      submit: function () {
+        if (!this.form.email){
+          this.$vux.toast.text('请输入邮箱')
+          return
+        }
+        if (!this.form.phoneCaptcha){
+          this.$vux.toast.text('请输入验证码')
+          return
+        }
+        this.$store.dispatch('resetBindEmail', this.form).then(res => {
+          console.log(res)
+          if (res.data.code === '200') {
+            this.$router.go(-2)
+          } else {
+            this.$vux.toast.text(res.data.message)
+          }
+        })
+      }
+    }
+  }
+</script>
+
+<style scoped>
+  .reset-phone-two-view {
+    padding: 45px 0;
+  }
+  .header{
+    background: #d86372;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+  }
+
+  .input-group > div {
+    margin-top: 0;
+  }
+
+  .input-group .weui-cells:before {
+    border-top: 0;
+  }
+
+  .input-group .weui-cells:after {
+    border-bottom: 0;
+  }
+
+  .input-group .weui-cell:before {
+    height: 1px;
+    border-top: 1px;
+  }
+
+  .input-group .weui-cell:after {
+    content: " ";
+    position: absolute;
+    left: 15px;
+    bottom: 0;
+    right: 0;
+    height: 1px;
+    border-bottom: 1px solid #f1f1f1;
+    color: #f1f1f1;
+    transform-origin: 0 100%;
+    transform: scaleY(0.5);
+  }
+
+  .weui-vcode-img {
+    width: 80px;
+  }
+
+  .primary-red {
+    background-color: #D86471 !important;
+    width: 80% !important;
+  }
+</style>
+<<style>
+.header.vux-header .vux-header-left .left-arrow:before {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #fff;
+    border-width: 1px 0 0 1px;
+    -webkit-transform: rotate(315deg);
+    transform: rotate(315deg);
+    top: 8px;
+    left: 7px;
+  }
+</style>

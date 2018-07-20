@@ -1,0 +1,220 @@
+<template>
+  <div class="edu-add">
+    <x-header class="header" :left-options="{backText: ''}">教育背景</x-header>
+    <group class="basic-info">
+        <popup-radio class="user-defined" title="最高学历" :options="eduHistoryCodes" v-model="form.hightestEduHistoryCode" placeholder="请选择最高学历"></popup-radio>
+        <cell title="知名公司offer">
+          <x-button slot="default" mini plain type="primary" @click.native="btnClick">添加</x-button>
+        </cell>
+        <div v-for="(offer, index) in list" :key="index">
+          <el-input v-model="list[index]"><el-button slot="append" @click.native="handleIconClick(index)">删除</el-button></el-input>
+        </div>
+
+        <div class="career-time">
+          <group class="group-time">
+            <datetime style="padding-right: 0;" class="date-left user-defined" format="YYYY-MM" :min-year='1900' title="在校时间" v-model="form.startTime" placeholder="-请选择-"></datetime>
+          </group>
+          <group class="group-time">
+            <datetime class="date-right" format="YYYY-MM" :min-year='1900' title="至" v-model="form.endTime" placeholder="-请选择-"></datetime>
+          </group>
+        </div>
+        <x-input class="user-defined" title="学校" v-model="form.schoolName" placeholder="请填写学校"></x-input>
+        <x-input class="user-defined" title="专业" v-model="form.major" placeholder="请填写专业"></x-input>
+        <popup-radio class="user-defined" title="学历" :options="eduHistoryCodes" v-model="form.eduHistoryCode" placeholder="请选择学历"></popup-radio>
+        <x-input class="user-defined" title="校内职务" v-model="form.schoolJob" placeholder="请填写校内职务"></x-input>
+        <x-input title="校内荣誉" v-model="form.honor" placeholder="请填写校内荣誉"></x-input>
+        <cell title="实习经历"></cell>
+        <x-textarea placeholder="请描述你的实习经历" v-model="form.fieldExp"></x-textarea>
+    </group>
+    <x-button class="basic-btn" type="warn" @click.native="save">保存</x-button>
+  </div>
+</template>
+
+<script>
+  import { Group, XInput, XButton, Cell, XTextarea, Confirm, PopupRadio, Datetime, XHeader } from 'vux'
+
+  export default {
+    name: 'edu-add',
+    components: { Group, XInput, XButton, Cell, XTextarea, Confirm, PopupRadio, Datetime, XHeader },
+    data() {
+      return {
+        list: [],
+        form: {
+          hightestEduHistoryCode: '',
+          offerList: [],
+          startTime: '',
+          endTime: '',
+          schoolName: '',
+          major: '',
+          eduHistoryCode: '',
+          schoolJob: '',
+          honor: '',
+          fieldExp: ''
+        },
+        eduHistoryCodes: [
+          {
+            key: '001',
+            value: '高中'
+          }, {
+            key: '002',
+            value: '中专'
+          }, {
+            key: '003',
+            value: '大专'
+          }, {
+            key: '004',
+            value: '本科'
+          }, {
+            key: '005',
+            value: '硕士'
+          }, {
+            key: '006',
+            value: '博士'
+          }, {
+            key: '007',
+            value: 'MBA'
+          }
+        ]
+      }
+    },
+    created() {
+    },
+    methods: {
+      save: function () {
+        if (!this.form.startTime){
+          this.$vux.toast.text('请填写开始时间')
+          return
+        }
+        if (!this.form.endTime){
+          this.$vux.toast.text('请填写结束时间')
+          return
+        }
+        for (var i = 0; i < this.list.length; i++) {
+          if (this.list[i] !== '') {
+            this.form.offerList.push(this.list[i])
+          }
+        }
+        this.$store.dispatch('addedu', this.form).then(res => {
+          console.log(res)
+          if (res.data.code === '200') {
+            this.isLoading = true
+            this.$router.go(-1)
+          } else {
+            this.$vux.toast.text(res.data.message)
+          }
+        })
+      },
+      btnClick () {
+        var obj = ''
+        this.list.push(obj)
+      },
+      handleIconClick (index) {
+        if (isNaN(index) || index >= this.list.length) {
+          return false
+        }
+        let newList = []
+        for (var i = 0; i < this.list.length; i++){
+          if (index !== i){
+            newList.push(this.list[i])
+          }
+        }
+        this.list = newList
+      }
+    }
+  }
+</script>
+
+<style scoped>
+.edu-add{
+    background: #f1f1f1;
+    padding-top: 45px;
+}
+.basic-btn{
+    position: fixed;
+    bottom: 0;
+    border-radius: 0;
+}
+.weui-btn_warn{
+  background: #D86471;
+}
+.career-time{
+  background: #f1f1f1;
+  display: flex;
+  position: relative;
+  width: 100%;
+}
+.group-time{
+  flex: 1;
+}
+.clearfix{
+  clear: both;
+}
+.header{
+  background: #d86372;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+}
+</style>
+<style>
+  .edu-add .weui-textarea{
+    background: #f1f1f1;
+    padding:10px;
+    min-height:150px;
+  }
+
+  .edu-add .weui-input{
+    text-align: right;
+  }
+  .weui-cells{
+    background: transparent;
+  }
+  .weui-cell{
+    background: #FFF;
+  }
+  .edu-add .el-input{
+    padding: 0 15px;
+  }
+  .edu-add .el-input__inner{
+    height: 42px;
+    border: none;
+    border-radius: 0;
+    border-top: 1px solid #d9d9d9;
+  }
+  .edu-add .el-input-group__append {
+    border-left: 0;
+    border: none;
+    border-radius: 0;
+    border-top: 1px solid #d9d9d9;
+    background: #fff;
+    color: #d84343;
+}
+
+.edu-add .vux-datetime-value .vux-cell-value {
+    font-size: 12px !important;
+}
+.vux-x-textarea:before{
+  border: none !important;
+}
+.date-left.weui-cell_access .weui-cell__ft:after{
+  display: none !important;
+}
+.date-right.weui-cell_access .weui-cell__ft:after{
+  display: none !important;
+}
+  .header.vux-header .vux-header-left .left-arrow:before {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #fff;
+    border-width: 1px 0 0 1px;
+    -webkit-transform: rotate(315deg);
+    transform: rotate(315deg);
+    top: 8px;
+    left: 7px;
+  }
+</style>
+

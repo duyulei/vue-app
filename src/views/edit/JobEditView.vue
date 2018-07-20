@@ -1,0 +1,328 @@
+<template>
+  <div class="job-edit">
+    <x-header class="header" :left-options="{backText: ''}">职业意向</x-header>
+    <group class="basic-info">
+        <popup-picker class="picker" ref="picker" title="期望行业" :data="list" :columns="2" v-model="pickerValue" @on-hide="onHide"></popup-picker>
+        <cell class="user-defined"  title="期望行业">
+          <x-button slot="default" mini plain type="warn" @click.native="btnClick">添加</x-button>
+        </cell>
+        <div v-for="(offer, index) in industryList" :key="index">
+          <el-input :disabled="true" v-model="industryList[index].value"><el-button slot="append" @click.native="handleIconClick(index)">删除</el-button></el-input>
+        </div>
+
+        <cell class="user-defined"  title="意向职位">
+          <x-button slot="default" mini plain type="warn" @click.native="btnClick2">添加</x-button>
+        </cell>
+        <div v-for="(offer, index) in positionList" :key="index">
+          <el-input placeholder="请输入意向职位" v-model="positionList[index]"><el-button slot="append" @click.native="handleIconClick2(index)">删除</el-button></el-input>
+        </div>
+
+        <popup-picker class="picker" ref="picker1" title="意向城市" :data="list1" :columns="2" v-model="pickerValue1" @on-hide="onHide1"></popup-picker>
+        <cell class="user-defined"  title="意向城市">
+          <x-button slot="default" mini plain type="warn" @click.native="btnClick1">添加</x-button>
+        </cell>
+        <div v-for="(offer, index) in cityList" :key="index">
+          <el-input :disabled="true" v-model="cityList[index].value"><el-button slot="append" @click.native="handleIconClick1(index)">删除</el-button></el-input>
+        </div>
+
+        <popup-radio class="user-defined"  title="工作类型" :options="jobTypes" v-model="form.jobTypeDiv" placeholder="请选择工作类型"></popup-radio>
+    </group>
+    <x-button class="basic-btn" type="warn" @click.native="save">保存</x-button>
+  </div>
+</template>
+
+<script>
+  import { XHeader, Group, XInput, XButton, Confirm, PopupRadio, PopupPicker, Cell } from 'vux'
+
+  export default {
+    name: 'job-edit',
+    components: { XHeader, Group, XInput, XButton, Confirm, PopupRadio, PopupPicker, Cell },
+    data() {
+      return {
+        moduleId: '',
+        jobTypes: [{key: '01', value: '全职'}, {key: '02', value: '兼职'}, {key: '03', value: '实习'}],
+        cityList: [],
+        industryList: [],
+        positionList: [],
+        form: {
+          expectedIndustryCodes: '',
+          expectedPositionNames: '',
+          cityCodes: '',
+          jobTypeDiv: ''
+        },
+        pickerValue: [],
+        industryResourceList: '',
+        dicResourceList: '',
+        list: [],
+        pickerValue1: [],
+        list1: []
+      }
+    },
+    created() {
+      this.$store.dispatch('getResource').then(res => {
+        if (res.data.code === '200') {
+          this.industryResourceList = res.data.data.industryResourceList
+          var arr = []
+          for (var i = 0; i < this.industryResourceList.length; i++) {
+            var objParent = {}
+            objParent.name = this.industryResourceList[i].resourceName
+            objParent.value = this.industryResourceList[i].resourceCode
+            objParent.parent = 0
+            arr.push(objParent)
+            if (this.industryResourceList[i].children) {
+              for (var j = 0; j < this.industryResourceList[i].children.length; j++) {
+                var obj = {}
+                obj.name = this.industryResourceList[i].children[j].resourceName
+                obj.value = this.industryResourceList[i].children[j].resourceCode
+                obj.parent = this.industryResourceList[i].resourceCode
+                arr.push(obj)
+              }
+            }
+          }
+          this.list = arr
+        } else {
+          this.$vux.toast.text(res.data.message)
+        }
+      })
+      // 城市
+      this.$store.dispatch('getResource').then(res => {
+        if (res.data.code === '200') {
+          this.dicResourceList = res.data.data.dicResourceList
+          var arr = []
+          for (var i = 0; i < this.dicResourceList.length; i++) {
+            var objParent = {}
+            objParent.name = this.dicResourceList[i].resourceName
+            objParent.value = this.dicResourceList[i].resourceCode
+            objParent.parent = 0
+            arr.push(objParent)
+            if (this.dicResourceList[i].children) {
+              for (var j = 0; j < this.dicResourceList[i].children.length; j++) {
+                var obj = {}
+                obj.name = this.dicResourceList[i].children[j].resourceName
+                obj.value = this.dicResourceList[i].children[j].resourceCode
+                obj.parent = this.dicResourceList[i].resourceCode
+                arr.push(obj)
+              }
+            }
+          }
+          this.list1 = arr
+        } else {
+          this.$vux.toast.text(res.data.message)
+        }
+      })
+      this.cityList = this.$store.state.resume.resume.jobIntentionValue.cityList
+      this.industryList = this.$store.state.resume.resume.jobIntentionValue.industryList
+      this.positionList = this.$store.state.resume.resume.jobIntentionValue.positionList
+      this.form.jobTypeDiv = this.$store.state.resume.resume.jobIntentionValue.jobTypeDiv
+      console.log(this.industryList)
+    },
+    methods: {
+      save () {
+        this.form.expectedIndustryCodes = []
+        for (var i = 0; i < this.industryList.length; i++) {
+          this.form.expectedIndustryCodes.push(this.industryList[i].key)
+        }
+        this.form.expectedPositionNames = this.positionList
+        this.form.cityCodes = []
+        for (var j = 0; j < this.cityList.length; j++) {
+          this.form.cityCodes.push(this.cityList[j].key)
+        }
+        if (!this.form.expectedIndustryCodes[0]) {
+          this.$vux.toast.text('请添加期望行业')
+          return
+        }
+        if (!this.form.expectedPositionNames[0]) {
+          this.$vux.toast.text('请添加意向职位')
+          return
+        }
+        if (!this.form.cityCodes[0]) {
+          this.$vux.toast.text('请添加意向城市')
+          return
+        }
+        if (!this.form.jobTypeDiv) {
+          this.$vux.toast.text('请选择工作类型')
+          return
+        }
+        this.$store.dispatch('editJob', this.form).then(res => {
+          console.log(res)
+          if (res.data.code === '200') {
+            this.isLoading = true
+            this.$router.go(-1)
+          } else {
+            this.$vux.toast.text(res.data.message)
+          }
+        })
+      },
+      btnClick () {
+        if (this.industryList.length < 5) {
+          this.$refs.picker.onClick()
+        } else {
+          this.$vux.toast.text('最多添加五项')
+        }
+      },
+      handleIconClick (index) {
+        if (isNaN(index) || index >= this.industryList.length) {
+          return false
+        }
+        let newList = []
+        for (var i = 0; i < this.industryList.length; i++){
+          if (index !== i){
+            newList.push(this.industryList[i])
+          }
+        }
+        this.industryList = newList
+      },
+      onHide (type) {
+        if (type === true) {
+          console.log(this.industryList)
+          console.log(this.pickerValue[1])
+          for (var i = 0; i < this.industryList.length; i++){
+            if (this.industryList[i].key === this.pickerValue[1]){
+              this.$vux.toast.text('已添加')
+              return
+            }
+          }
+          var obj = {}
+          obj.key = this.pickerValue[1]
+          obj.value = this.$refs.picker.getNameValues().split(' ')[1]
+          this.industryList.push(obj)
+        }
+      },
+      btnClick2 () {
+        var obj = ''
+        if (this.positionList.length < 5) {
+          this.positionList.push(obj)
+        } else {
+          this.$vux.toast.text('最多添加五项')
+        }
+      },
+      handleIconClick2 (index) {
+        if (isNaN(index) || index >= this.positionList.length) {
+          return false
+        }
+        let newList = []
+        for (var i = 0; i < this.positionList.length; i++){
+          if (index !== i){
+            newList.push(this.positionList[i])
+          }
+        }
+        this.positionList = newList
+      },
+      btnClick1 () {
+        if (this.cityList.length < 5) {
+          this.$refs.picker1.onClick()
+        } else {
+          this.$vux.toast.text('最多添加五项')
+        }
+      },
+      handleIconClick1 (index) {
+        if (isNaN(index) || index >= this.cityList.length) {
+          return false
+        }
+        let newList = []
+        for (var i = 0; i < this.cityList.length; i++){
+          if (index !== i){
+            newList.push(this.cityList[i])
+          }
+        }
+        this.cityList = newList
+      },
+      onHide1 (type) {
+        if (type === true) {
+          for (var i = 0; i < this.cityList.length; i++){
+            if (this.cityList[i].key === this.pickerValue1[1]){
+              this.$vux.toast.text('已添加')
+              return
+            }
+          }
+          var obj = {}
+          obj.key = this.pickerValue1[1]
+          obj.value = this.$refs.picker1.getNameValues().split(' ')[1]
+          this.cityList.push(obj)
+        }
+      }
+    }
+  }
+</script>
+
+<style scoped>
+.job-edit{
+    background: #f1f1f1;
+    padding-top: 45px;
+    padding-bottom: 40px;
+}
+.basic-info{
+    padding-bottom: 40px;
+}
+.picker{
+  position: absolute;
+  top: -300px;
+}
+.basic-btn{
+    position: fixed;
+    bottom: 0;
+    border-radius: 0;
+}
+.weui-btn_warn{
+  background: #D86471;
+}
+.delete-box{
+  width: 100%;
+  position: fixed;
+  bottom: 60px;
+  border-radius: 0;
+}
+.delete-btn{
+  width: 80%;
+  border: 1px solid #D86471;
+  color: #D86471;
+}
+.header{
+  background: #d86372;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+}
+</style>
+<style>
+  .job-edit .el-input{
+    padding: 0 15px;
+  }
+  
+  .job-edit .weui-input{
+    text-align: right;
+  }
+  .job-edit .el-input__inner{
+    height: 42px;
+    border: none;
+    border-radius: 0;
+    border-top: 1px solid #d9d9d9;
+    background: #fff !important;
+  }
+  .job-edit .el-input-group__append {
+    border-left: 0;
+    border: none;
+    border-radius: 0;
+    border-top: 1px solid #d9d9d9;
+    background: #fff;
+    color: #d84343;
+  }
+  .job-edit .el-input.is-disabled .el-input__inner{
+    color: #1f2d3d !important;
+  }
+  .header.vux-header .vux-header-left .left-arrow:before {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #fff;
+    border-width: 1px 0 0 1px;
+    -webkit-transform: rotate(315deg);
+    transform: rotate(315deg);
+    top: 8px;
+    left: 7px;
+  }
+</style>
+

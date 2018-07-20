@@ -1,0 +1,180 @@
+<template>
+  <div class="login-view">
+    <flexbox class="logo" justify="center" align="center">
+      <img src="../../assets/logo-black.png">
+    </flexbox>
+    <div>
+      <group class="input-group">
+        <x-input type="tel" v-model.trim="form.phone" keyboard="number" is-type="china-mobile"
+                 :max="11"
+                 placeholder="输入手机号"></x-input>
+        <x-input type="password" v-model.trim="form.password" :min="6" placeholder="输入密码"></x-input>
+      </group>
+    </div>
+    <x-button class="primary-red" type="primary" style="margin-top: 20px;" @click.native="checkLoginCaptchaShow">登录
+    </x-button>
+    <a class="btn-forgot" @click="goNeedBackView('/retrieve-password')">忘记密码?</a>
+    <div class="contr">
+      <a class="btn-contr" @click="goNeedBackView('/regist')" style=" float: right;">注册</a>
+    </div>
+    <x-dialog v-model="showToast" hide-on-blur class="dialog">
+      <x-input v-model.trim="form.captcha" placeholder="验证码">
+        <img @click="reloadCaptcha()" slot="right" class="weui-vcode-img" :src="captcha">
+      </x-input>
+      <x-button class="primary-red" mini type="primary" style="margin-top: 20px;" @click.native="login">提交
+      </x-button>
+    </x-dialog>
+  </div>
+</template>
+
+<script>
+  import commonMixin from '@/mixins/common'
+  import { mapState } from 'vuex'
+  import { Flexbox, XInput, Group, XButton, XDialog } from 'vux'
+  import axios from 'axios'
+
+  export default {
+    name: 'login-view',
+    mixins: [commonMixin],
+    components: {
+      Flexbox,
+      XInput,
+      Group,
+      XButton,
+      XDialog
+    },
+    data () {
+      return {
+        showToast: false,
+        form: {
+          phone: '',
+          password: '',
+          captcha: ''
+        },
+        captcha: ''
+      }
+    },
+    computed: mapState({
+      accountToken: state => state.user.accountToken
+    }),
+    created: function () {
+    },
+    methods: {
+      login: function () {
+        this.$store.dispatch('login', this.form).then(res => {
+          console.log(res)
+          if (res.data.code === '200') {
+            this.goBackView()
+          } else {
+            this.$vux.toast.text(res.data.message)
+          }
+        })
+      },
+      checkLoginCaptchaShow: function () {
+        if (!this.form.phone || !this.form.password) {
+          this.$vux.toast.text('请输入手机号或密码')
+          return
+        }
+        this.$store.dispatch('checkLoginCaptchaShow', this.form).then(res => {
+          console.log(res)
+          if (res.data.code === '200') {
+            if (res.data.data.showCaptcha) {
+              this.reloadCaptcha()
+              this.showToast = true
+            } else {
+              this.login()
+            }
+          } else {
+            this.$vux.toast.text(res.data.message)
+          }
+        })
+      },
+      reloadCaptcha: function () {
+        this.captcha = axios.defaults.baseURL + '/captcha/image/get?phoneNum=' + this.form.phone + '&t=' + new Date()
+      }
+    }
+  }
+</script>
+
+<style scoped>
+
+  .login-view {
+    padding: 15px 50px;
+  }
+
+  .logo {
+    height: 150px;
+  }
+
+  .logo img {
+    height: 50px;
+    width: 120px;
+  }
+
+  .input-group > div {
+    margin-top: 0;
+  }
+
+  .input-group .weui-cells:before {
+    border-top: 0;
+  }
+
+  .input-group .weui-cells:after {
+    border-bottom: 0;
+  }
+
+  .input-group .weui-cell:before {
+    height: 1px;
+    border-top: 1px;
+  }
+
+  .input-group .weui-cell:after {
+    content: " ";
+    position: absolute;
+    left: 15px;
+    bottom: 0;
+    right: 0;
+    height: 1px;
+    border-bottom: 1px solid #f1f1f1;
+    color: #f1f1f1;
+    transform-origin: 0 100%;
+    transform: scaleY(0.5);
+  }
+
+  .weui-vcode-img {
+    width: 80px;
+  }
+
+  .primary-red {
+    background-color: #D86471 !important;
+  }
+
+  .btn-forgot {
+    margin-top: 25px;
+    color: #454545;
+    font-size: 14px;
+    text-align: center;
+    float: right !important;
+  }
+
+  .contr {
+    position: absolute;
+    bottom: 30px;
+    left: 0;
+    right: 0;
+  }
+
+  .btn-contr {
+    color: #D86471;
+    font-size: 16px;
+    margin-left: 50px;
+    margin-right: 50px;
+  }
+
+</style>
+
+<style>
+  .dialog .weui-dialog {
+    padding: 20px;
+  }
+</style>

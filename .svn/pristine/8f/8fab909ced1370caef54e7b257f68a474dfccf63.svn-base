@@ -1,0 +1,113 @@
+<template>
+  <div class="modify-cash-password-view">
+    <x-header class="header" :left-options="{backText: ''}">修改提现密码</x-header>
+    <div>
+      <group class="input-group">
+        <x-input type="password" v-model.trim="form.oldPassword" :min="6" placeholder="输入原提现密码"></x-input>
+        <x-input type="password" v-model.trim="form.newPassword" :min="6" placeholder="设置新提现密码"></x-input>
+        <x-input type="password" v-model.trim="form.rePassword" :min="6" placeholder="确认新提现密码"></x-input>
+      </group>
+    </div>
+    <x-button class="primary-red" type="primary" style="margin-top: 20px;" @click.native="reset">确定</x-button>
+  </div>
+</template>
+
+<script>
+  import { Flexbox, XInput, Group, XButton, XHeader } from 'vux'
+
+  export default {
+    name: 'modify-cash-password-view',
+    components: {
+      Flexbox,
+      XInput,
+      Group,
+      XButton,
+      XHeader
+    },
+    data () {
+      return {
+        form: {
+          oldPassword: '',
+          newPassword: '',
+          rePassword: ''
+        }
+      }
+    },
+    methods: {
+      reset: function () {
+        // this.$store.dispatch('modifyPassword', this.form).then(res => {
+        //   console.log(res)
+        //   if (res.data.code === '200') {
+        //     this.$router.replace({path: '/login'})
+        //   } else {
+        //   }
+        //   this.$vux.toast.text(res.data.message)
+        // })
+      }
+    }
+  }
+</script>
+
+<style scoped>
+  .modify-cash-password-view {
+    padding: 45px 0;
+  }
+
+  .header{
+    background: #d86372;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+  }
+  .input-group .weui-cells:before {
+    border-top: 0;
+  }
+
+  .input-group .weui-cells:after {
+    border-bottom: 0;
+  }
+
+  .input-group .weui-cell:before {
+    height: 1px;
+    border-top: 1px;
+  }
+
+  .input-group .weui-cell:after {
+    content: " ";
+    position: absolute;
+    left: 15px;
+    bottom: 0;
+    right: 0;
+    height: 1px;
+    border-bottom: 1px solid #f1f1f1;
+    color: #f1f1f1;
+    transform-origin: 0 100%;
+    transform: scaleY(0.5);
+  }
+
+  .weui-vcode-img {
+    width: 80px;
+  }
+
+  .primary-red {
+    width: 80% !important;
+    background-color: #D86471 !important;
+  }
+</style>
+<style>
+  .header.vux-header .vux-header-left .left-arrow:before {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #fff;
+    border-width: 1px 0 0 1px;
+    -webkit-transform: rotate(315deg);
+    transform: rotate(315deg);
+    top: 8px;
+    left: 7px;
+  }
+</style>
+
